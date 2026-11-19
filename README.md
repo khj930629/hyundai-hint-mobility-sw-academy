@@ -4,6 +4,14 @@
 
 > 자동차 및 모빌리티 소프트웨어를 공부하기 위해 제작한 개인 학습용 웹사이트
 
+**📅 학습 페이지 바로가기**
+
+- [DAY 01](https://hint_mobility-sw-academy)
+- [DAY 02](https://hint_mobility-sw-academy2)
+- [DAY 03](https://hint_mobility-sw-academy3)
+
+---
+
 ## 📌 프로젝트 소개
 
 **현대 HINT 모빌리티 SW 아카데미**는 자동차 및 모빌리티 소프트웨어 분야의 지식을 체계적으로 학습하기 위해 개인적으로 기획하고 제작한 웹 기반 학습 프로젝트입니다.
