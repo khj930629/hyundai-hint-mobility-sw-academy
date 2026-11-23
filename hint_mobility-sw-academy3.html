@@ -88,7 +88,7 @@
 
       <div class="hidden sm:flex items-center gap-2 text-xs bg-white/10 px-3 py-1.5 rounded-lg">
         <span class="text-sky-200">문제은행:</span>
-        <span class="font-bold text-amber-300">100문항 탑재</span>
+        <span class="font-bold text-amber-300">110문항 탑재</span>
       </div>
 
       <button onclick="openStorageInfoModal()" class="p-2 rounded-lg hover:bg-white/10 text-sky-200 hover:text-white transition" title="데이터 저장 및 환경 안내">
@@ -106,7 +106,7 @@
     <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 w-72 bg-white border-r border-hyundai-border flex flex-col z-20 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out shrink-0">
       <div class="p-3 border-b border-slate-100 bg-slate-50/80 flex items-center justify-between">
         <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Curriculum & Labs</span>
-        <span id="sidebar-completed-count" class="text-xs font-semibold text-hyundai-navy bg-blue-100 px-2 py-0.5 rounded-full">0 / 22 완료</span>
+        <span id="sidebar-completed-count" class="text-xs font-semibold text-hyundai-navy bg-blue-100 px-2 py-0.5 rounded-full">0 / 24 완료</span>
       </div>
 
       <nav id="sidebar-nav" class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1"></nav>
@@ -114,7 +114,7 @@
       <div class="p-3 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-500">
         <div class="flex items-center justify-between mb-1">
           <span>출처: Mobility SW Process 3일차</span>
-          <span class="font-semibold text-hyundai-navy">86p 완역반영</span>
+          <span class="font-semibold text-hyundai-navy">본문+추가자료</span>
         </div>
         <button onclick="confirmResetProgress()" class="w-full mt-1 py-1.5 px-2 bg-white border border-slate-300 hover:bg-red-50 hover:text-red-600 hover:border-red-200 rounded text-slate-600 font-medium transition text-center">
           학습 기록 초기화
@@ -476,6 +476,37 @@ const CURRICULUM_UNITS = [
       options: ['Boundary Value Analysis', 'Decision Table Testing', 'Statement Coverage', 'Function Coverage'],
       ans: 1,
       exp: '복수 조건의 논리 조합과 그에 따른 결과(Action)를 표 형태로 빠짐없이 검증하는 기법은 Decision Table Testing입니다.'
+    }
+  }),
+
+  makeUnit({
+    id: 'u2_3', chapter: 'Chapter 02. Test Design Process',
+    title: '2.3 Dynamic Test Design Techniques 분류 체계 (Taxonomy)', pages: '추가자료 p.6',
+    simType: 'testDesignFlow', simTitle: 'Dynamic Test Design Techniques 3대 분류 및 선택 기준 탐색기',
+    objectives: [
+      '동적 테스트 설계 기법(Dynamic Test Design Techniques)의 3대 분류(Specification-based, Structure-based, Experience-based)를 체계적으로 설명할 수 있다.',
+      'Experience-based 기법에 속하는 Error Guessing, Exploratory Testing, Software Attacks / Ad Hoc의 차이를 이해한다.',
+      '프로젝트에서 테스트 기법을 선정할 때 고려해야 하는 4대 선택 기준을 적용할 수 있다.'
+    ],
+    coreConcepts: [
+      { term: 'Specification-based (명세 기반)', desc: '명세/요구사항의 입력·출력·상태로부터 도출 (Boundary Value Analysis, State Transition Testing, Decision Table Testing, EP 등)' },
+      { term: 'Structure-based (구조 기반)', desc: '소스 코드/구조/분기/데이터 흐름으로부터 도출 (Statement/Branch/Condition, MC/DC, Data Flow Testing, 구조 커버리지 측정)' },
+      { term: 'Experience-based (경험 기반)', desc: '경험·도메인 지식·이전 결함으로부터 도출 (Error Guessing, Exploratory Testing, Software Attacks / Ad Hoc)' }
+    ],
+    theory: `추가자료(p.6)의 <strong>Technique Taxonomy</strong>는 동적 테스트 설계 기법을 출발점(원천)에 따라 세 가지 축으로 분류합니다.<br>1) <strong>Specification-based:</strong> 요구사항·명세의 입출력과 상태 전이를 근거로 도출합니다.<br>2) <strong>Structure-based:</strong> 실제 구현된 소스 코드의 제어 흐름·분기·데이터 흐름을 근거로 도출하고 커버리지를 측정합니다.<br>3) <strong>Experience-based:</strong> 엔지니어의 도메인 지식과 과거 결함 이력을 바탕으로 <strong>Error Guessing(오류 추정)</strong>, <strong>Exploratory Testing(탐색적 테스팅: 테스트 설계와 실행을 동시에 학습하며 진행)</strong>, <strong>Software Attacks / Ad Hoc(비정형 결함 유발 공격)</strong>을 수행합니다.`,
+    mechanism: `실무에서 최적의 기법 조합을 결정할 때는 다음 <strong>4대 선택 기준(추가자료 p.6)</strong>을 종합 평가합니다:<br>① <strong>테스트 기준의 성격</strong> (요구사항 명세의 구체성 vs 코드 구조 중심)<br>② <strong>테스트 대상 구조</strong> (단순 함수, 다중 조건 조합, 상태 머신, 네트워크 인터페이스)<br>③ <strong>위험 수준</strong> (ISO 26262 ASIL 등급, 보안 위협 수준)<br>④ <strong>사용 가능한 시간·도구·역량</strong> (커버리지 도구 유무, 일정, 테스터 숙련도)`,
+    background: `모든 프로젝트에 항상 모든 기법을 동일하게 적용할 수는 없습니다. ASIL D 안전 핵심 모듈에는 명세 기반 기법에 더해 MC/DC 같은 고강도 구조 기반 기법을 필수 적용하고, UI/인포테인먼트나 프로토타입 초기 단계에서는 Exploratory Testing과 Software Attacks의 비중을 높이는 등 위험 기반(Risk-based) 테일러링이 필요합니다.`,
+    ecuCase: `<strong>위험 수준 및 대상 구조에 따른 기법 선택 예시:</strong><br>• <strong>제동/전조등 안전 차단 로직 (ASIL 등급 높음):</strong> 명세 기반(BVA, State Transition) + 구조 기반(Branch, MC/DC 100%) + 경험 기반(Error Guessing) 결합.<br>• <strong>차량 진단기 프로토콜 예외 처리:</strong> 명세 기반(EP) + 경험 기반(Software Attacks: 잘못된 길이/순서의 UDS 프레임 연속 주입 및 Exploratory Testing).`,
+    comparison: `<table class="min-w-full text-xs border border-slate-300"><thead class="bg-slate-100"><tr><th class="p-2 border">대분류</th><th class="p-2 border">도출 근거</th><th class="p-2 border">대표 세부 기법 (추가자료 p.6)</th></tr></thead><tbody><tr><td class="p-2 border font-bold text-hyundai-navy">Specification-based</td><td class="p-2 border">명세/요구사항의 입력·출력·상태</td><td class="p-2 border">Boundary Value Analysis, State Transition Testing, Decision Table Testing</td></tr><tr><td class="p-2 border font-bold text-hyundai-blue">Structure-based</td><td class="p-2 border">코드/구조/분기/데이터 흐름</td><td class="p-2 border">Statement/Branch/Condition, Data Flow Testing, 구조 커버리지 측정</td></tr><tr><td class="p-2 border font-bold text-amber-700">Experience-based</td><td class="p-2 border">경험·도메인 지식·이전 결함</td><td class="p-2 border">Error Guessing, Exploratory Testing, Software Attacks / Ad Hoc</td></tr></tbody></table>`,
+    summary: [
+      '동적 테스트 설계 기법은 Specification-based, Structure-based, Experience-based(Error Guessing, Exploratory Testing, Software Attacks/Ad Hoc)로 분류된다.',
+      '기법 선택 기준은 ① 테스트 기준의 성격, ② 테스트 대상 구조, ③ 위험 수준, ④ 사용 가능한 시간·도구·역량이다.'
+    ],
+    checkQuiz: {
+      q: '추가자료(p.6) Technique Taxonomy에서 Experience-based(경험 기반) 기법 분류에 포함되지 않는 것은?',
+      options: ['Error Guessing', 'Exploratory Testing', 'Software Attacks / Ad Hoc', 'Data Flow Testing'],
+      ans: 3,
+      exp: 'Data Flow Testing은 코드/구조/분기/데이터 흐름으로부터 도출하는 Structure-based(구조 기반) 기법에 속합니다.'
     }
   }),
 
@@ -1015,11 +1046,43 @@ const CURRICULUM_UNITS = [
       ans: 1,
       exp: '교재 p.49 코드에서 if (dtc == 0) return; 이후 if (isNew) SaveFault(dtc); 가 실행되므로, 고장이 존재(dtc != 0)하고 이전 저장값과 다른 신규 결함일 때만 저장합니다.'
     }
+  }),
+
+  makeUnit({
+    id: 'u5_4', chapter: 'Chapter 05. Automotive ECU Testing Practice',
+    title: '5.4 자동차 SW 테스트 환경: MIL · SIL · PIL · HIL · Bench · Vehicle', pages: '추가자료 p.1~5',
+    simType: 'testEnvSim', simTitle: 'X-in-the-Loop (MIL → SIL → PIL → HIL → Bench → Vehicle) 환경 시뮬레이터',
+    objectives: [
+      'MIL, SIL, PIL, HIL, Bench, Vehicle 6단계 자동차 SW 테스트 환경의 계층 구조를 이해한다.',
+      'MIL, SIL, PIL, HIL 각각의 테스트 대상, 실행 환경, 플랜트/입출력, 주요 확인 항목을 명확히 구분할 수 있다.',
+      '실제 MCU 보드를 사용하는 PIL과 실제 ECU 하드웨어 및 I/O 부하를 연결하는 HIL의 결정적 차이를 설명할 수 있다.'
+    ],
+    coreConcepts: [
+      { term: 'MIL (Model-In-the-loop)', desc: '제어 모델(알고리즘, 상태도, 수식 모델)과 가상 차량/플랜트 모델을 모두 PC 모델링 툴에서 시뮬레이션으로 검증' },
+      { term: 'SIL (Software-In-the-loop)', desc: '자동 생성 코드 또는 직접 작성한 C 코드(유닛/컴포넌트)를 PC 기반 가상 ECU 환경에서 실행하여 코드 로직·인터페이스 검증' },
+      { term: 'PIL (Processor-In-the-loop)', desc: '실제 타깃 MCU/프로세서 개발 보드에 컴파일된 코드를 올리고, 나머지 차량/플랜트 환경은 호스트 PC에서 비실시간·단계별 시뮬레이션하여 연산시간·타깃 의존성·컴파일러 영향 검증' },
+      { term: 'HIL (Hardware-In-the-loop)', desc: '실제 ECU(실제 I/O, 실제 통신 인터페이스)를 HIL 랙·I/O 보드·부하박스와 연결해 차량·센서·액추에이터·고장 조건을 실시간 모사하여 통합 동작·고장주입·타이밍 검증' }
+    ],
+    theory: `자동차 임베디드 SW는 개발 성숙도에 따라 <strong>MIL → SIL → PIL → HIL → Bench → Vehicle</strong> 순으로 실제 하드웨어와 차량 환경의 비중을 높여가며 검증합니다.<br>1) <strong>MIL (추가자료 p.2):</strong> 하드웨어나 C 코드가 완성되기 전, Simulink/Stateflow 등의 제어 모델과 가상 차량/도로 시나리오를 PC에서 폐루프로 연결해 요구사항과 제어 알고리즘 자체의 타당성을 조기 검증합니다.<br>2) <strong>SIL (추가자료 p.3):</strong> 모델에서 자동 생성된 코드나 수기 작성 C 코드를 PC 가상 ECU 환경에서 실행하여 코드 로직, 인터페이스, 단위/통합 동작과 자동화 시험 리포트를 확보합니다.<br>3) <strong>PIL (추가자료 p.4):</strong> 실제 타깃 MCU 보드와 디버거에 코드를 올려 실행하고 호스트 PC의 가상 플랜트와 입출력 신호를 교환함으로써, PC와 다른 <strong>연산시간(Execution Time), 타깃 하드웨어 의존성(엔디안·메모리 정렬), 크로스 컴파일러 최적화 영향</strong>을 검증합니다.<br>4) <strong>HIL (추가자료 p.5):</strong> 양산형에 가까운 <strong>실제 ECU</strong>를 HIL 랙, I/O 보드, 부하박스(Load Box)에 연결하고 실시간 시뮬레이터로 센서·액추에이터·도로·고장(단선/단락) 조건을 모사하여 <strong>실시간 타이밍, 고장주입(Fault Injection), 통합 동작</strong>을 실차 투입 전에 검증합니다.<br>5) <strong>Bench & Vehicle:</strong> 실제 와이어링 하네스·액추에이터 실물을 조합한 Bench 테스트와 최종 실차(Vehicle) 주행 테스트로 완성도를 입증합니다.`,
+    mechanism: `• <strong>MIL / SIL:</strong> PC 내부 가상 실행 환경 (하드웨어 불필요, 빠른 반복 및 Shift-Left 결함 조기 검출)<br>• <strong>PIL:</strong> Target MCU 보드(실제 프로세서) ↔ 호스트 PC 가상 차량 모델 (디버거/통신 인터페이스 기반 연산·컴파일러 검증)<br>• <strong>HIL:</strong> 실제 ECU(실제 핀 I/O, CAN/LIN 통신) ↔ 실시간 HIL 랙 & 부하박스 (하드웨어 전기적 고장주입 및 실시간 주기 검증)`,
+    background: `실차(Vehicle) 단계에서만 테스트하면 차량 프로토타입 제작 비용이 막대하고 단락·과전압 같은 위험한 고장주입 테스트 시 안전사고 위험이 큽니다. X-in-the-Loop 환경을 단계적으로 거치면 결함을 조기에 저렴하게 발견하고 안전한 실험실 환경에서 극한 고장을 재현할 수 있습니다.`,
+    ecuCase: `<strong>LCU(Lamp Control Unit)의 X-in-the-Loop 단계별 검증:</strong><br>• <strong>MIL:</strong> 오토라이트 조도 히스테리시스 및 상태 전이 모델이 가상 야간 터널 시나리오에서 정상 동작하는지 확인.<br>• <strong>SIL:</strong> <code>LCU_SetLowBeam()</code> C 코드의 Statement/Branch/MC/DC 커버리지 및 단위 로직을 PC에서 자동화 검증.<br>• <strong>PIL:</strong> 타깃 MCU(예: Infineon AURIX) 개발 보드에서 PWM 듀티 연산이 10ms 태스크 주기 내 완료되는지 연산시간 및 컴파일러 최적화 영향 확인.<br>• <strong>HIL:</strong> 실제 LCU 하드웨어 핀에 부하박스로 전조등 단락(Short-to-Bat)을 실시간 주입하여 FET 보호 차단 및 CAN DTC 출력을 검증.`,
+    comparison: `<table class="min-w-full text-xs border border-slate-300"><thead class="bg-slate-100"><tr><th class="p-2 border">환경</th><th class="p-2 border">테스트 대상</th><th class="p-2 border">실행 환경</th><th class="p-2 border">플랜트 / 입출력</th><th class="p-2 border">주요 확인 항목</th></tr></thead><tbody><tr><td class="p-2 border font-bold text-sky-700">MIL</td><td class="p-2 border">제어 알고리즘, 상태도, 수식 모델</td><td class="p-2 border">모델링 툴 / PC 시뮬레이터</td><td class="p-2 border">가상 차량, 센서, 액추에이터, 도로 시나리오</td><td class="p-2 border">요구사항, 제어 로직, 알고리즘 동작</td></tr><tr><td class="p-2 border font-bold text-indigo-700">SIL</td><td class="p-2 border">생성 코드, C 코드, SW 유닛/컴포넌트</td><td class="p-2 border">PC 기반 가상 ECU / 테스트 자동화 환경</td><td class="p-2 border">가상 차량 모델과 테스트 시나리오</td><td class="p-2 border">코드 로직, 인터페이스, 단위/통합 동작</td></tr><tr><td class="p-2 border font-bold text-amber-700">PIL</td><td class="p-2 border">타깃 MCU/프로세서에서 실행되는 제어 코드</td><td class="p-2 border">개발 보드, 디버거, 호스트 PC</td><td class="p-2 border">PC의 가상 차량/플랜트 모델</td><td class="p-2 border">연산시간, 타깃 의존성, 컴파일러 영향</td></tr><tr><td class="p-2 border font-bold text-rose-700">HIL</td><td class="p-2 border">실제 ECU, 실제 I/O, 실제 통신 인터페이스</td><td class="p-2 border">HIL 랙, I/O 보드, 부하박스, 실시간 시뮬레이터</td><td class="p-2 border">센서/액추에이터/도로/고장 조건 모사</td><td class="p-2 border">통합 동작, 고장주입, 타이밍, 실차 전 검증</td></tr></tbody></table>`,
+    summary: [
+      '자동차 SW 테스트 환경은 MIL → SIL → PIL → HIL → Bench → Vehicle 순으로 실제 하드웨어와 실차 환경을 점진적으로 결합한다.',
+      'MIL은 제어 모델, SIL은 PC 상의 C 코드, PIL은 타깃 MCU 보드에서의 연산시간·컴파일러 영향, HIL은 실제 ECU와 실시간 부하/고장주입을 검증한다.'
+    ],
+    checkQuiz: {
+      q: '실제 타깃 MCU/프로세서 개발 보드에 컴파일된 제어 코드를 올리고 나머지 차량 환경은 호스트 PC에서 시뮬레이션하여 "연산시간, 타깃 의존성, 컴파일러 영향"을 주로 확인하는 테스트 환경은?',
+      options: ['MIL (Model-In-the-loop)', 'SIL (Software-In-the-loop)', 'PIL (Processor-In-the-loop)', 'HIL (Hardware-In-the-loop)'],
+      ans: 2,
+      exp: '추가자료(p.4)에 따라 PIL(Processor-In-the-loop)은 실제 타깃 MCU 보드와 호스트 PC 가상 플랜트를 연결해 연산시간, 타깃 의존성, 컴파일러 영향을 확인합니다.'
+    }
   })
 ];
 
 // ============================================================================
-// 3. 100-QUESTION BANK (EXACT DISTRIBUTION: 15/10/10/10/15/10/15/15 = 100)
+// 3. 110-QUESTION BANK (ORIGINAL 100 + NEW 10 FROM SUPPLEMENTARY PDF)
 // ============================================================================
 const QUESTION_BANK = [
   // --- [1] Software Testing 표준: 15문항 (Q001 ~ Q015) ---
@@ -1806,7 +1869,104 @@ const QUESTION_BANK = [
       'Data Flow(호출 edge 실행) - Call(변수 정의-사용)'
     ],
     answer: [0], explanation: '교재 p.85 도표의 6가지 구조 기반 커버리지 정의와 핵심 질문이 모두 정확하게 연결되어 있습니다.',
-    wrongExplanation: '각 커버리지 수준이 확인하는 구조적 단위를 명확히 구분해야 합니다.', source: '교재 p.85' }
+    wrongExplanation: '각 커버리지 수준이 확인하는 구조적 단위를 명확히 구분해야 합니다.', source: '교재 p.85' },
+
+  // --- [9] 테스트 환경 (MIL/SIL/PIL/HIL) & 기법 분류 (추가자료 p.1~6): 10문항 (Q101 ~ Q110) ---
+  { id: 'Q101', category: '테스트 환경 및 기법 분류', concept: 'X-in-the-Loop 단계 순서', type: '4지선다형', difficulty: '하',
+    question: '추가자료(p.1)에서 제시한 자동차 SW 테스트 환경이 모델 단계에서 실차 단계로 확장되는 표준 순서로 올바른 것은?',
+    options: [
+      'MIL → SIL → PIL → HIL → Bench → Vehicle',
+      'HIL → PIL → SIL → MIL → Vehicle → Bench',
+      'SIL → MIL → HIL → PIL → Bench → Vehicle',
+      'Vehicle → Bench → HIL → PIL → SIL → MIL'
+    ],
+    answer: [0], explanation: '추가자료 p.1에 따라 MIL(Model) → SIL(Software) → PIL(Processor) → HIL(Hardware) → Bench → Vehicle 순서로 테스트 환경이 확장됩니다.',
+    wrongExplanation: '초기 모델(MIL)에서 코드(SIL), 타깃 프로세서(PIL), 실제 ECU 하드웨어(HIL), 벤치, 실차 순으로 진행됩니다.', source: '추가자료 p.1' },
+  { id: 'Q102', category: '테스트 환경 및 기법 분류', concept: 'MIL 테스트 환경 특징', type: '4지선다형', difficulty: '하',
+    question: 'MIL(Model-In-the-loop) 테스트 환경에 대한 설명으로 가장 정확한 것은?',
+    options: [
+      '제어 모델(알고리즘, 상태도, 수식 모델)과 가상 차량/플랜트 모델을 모두 PC 시뮬레이션 환경에서 검증한다',
+      '실제 양산형 ECU와 부하박스를 HIL 랙에 연결하여 하드웨어 단락 고장주입을 실시간 검증한다',
+      '실제 타깃 MCU 보드에 바이너리를 올려 크로스 컴파일러 최적화 영향을 검증한다',
+      '실차 주행시험장에서 운전자가 직접 주행하며 승차감을 평가한다'
+    ],
+    answer: [0], explanation: '추가자료 p.2에 따라 MIL은 제어 모델과 가상 차량/플랜트 모델을 모두 모델링 툴/PC 시뮬레이터에서 신호 교환으로 검증합니다.',
+    wrongExplanation: 'MIL은 C 코드나 하드웨어 제작 전 단계에서 요구사항, 제어 로직, 알고리즘 동작을 조기 확인합니다.', source: '추가자료 p.2' },
+  { id: 'Q103', category: '테스트 환경 및 기법 분류', concept: 'SIL 테스트 환경 특징', type: '4지선다형', difficulty: '하',
+    question: 'SIL(Software-In-the-loop) 테스트 환경의 주요 테스트 대상과 확인 항목이 올바르게 연결된 것은?',
+    options: [
+      '테스트 대상: 모델에서 생성된 코드 또는 C 코드(유닛/컴포넌트) / 주요 확인: 코드 로직, 인터페이스, 단위/통합 동작',
+      '테스트 대상: 실제 ECU 핀 I/O 및 물리 액추에이터 / 주요 확인: 부하박스 전류 소모량',
+      '테스트 대상: 수식 모델 및 상태도 블록 / 주요 확인: 모델링 툴 UI 색상',
+      '테스트 대상: 타깃 MCU 디버거 하드웨어 / 주요 확인: JTAG 클럭 주파수'
+    ],
+    answer: [0], explanation: '추가자료 p.3에 따라 SIL은 생성 코드나 C 코드를 PC 기반 가상 ECU/테스트 자동화 환경에서 실행하여 코드 로직, 인터페이스, 단위/통합 동작을 검증합니다.',
+    wrongExplanation: 'SIL은 실제 타깃 보드 없이 PC 환경에서 빠르게 코드 단위/통합 테스트와 자동화 리포트를 생성합니다.', source: '추가자료 p.3' },
+  { id: 'Q104', category: '테스트 환경 및 기법 분류', concept: 'PIL 테스트 환경 특징', type: '4지선다형', difficulty: '중',
+    question: '추가자료(p.4)에 따라 PIL(Processor-In-the-loop) 테스트 환경에서 실제 타깃 MCU/프로세서 보드와 호스트 PC 가상 차량 모델을 연결하여 중점적으로 확인하는 항목은?',
+    options: [
+      '연산시간(Execution Time), 타깃 의존성, 컴파일러 영향',
+      '실제 와이어링 하네스의 물리적 진동 내구성',
+      '운전자 시트 포지션에 따른 전방 시야각',
+      '모델링 툴의 블록 다이어그램 가독성'
+    ],
+    answer: [0], explanation: '추가자료 p.4에 명시된 바와 같이 PIL은 실제 프로세서/MCU 보드에서 제어 코드를 실행하면서 연산시간, 타깃 의존성, 크로스 컴파일러 영향을 주로 확인합니다.',
+    wrongExplanation: 'PC(x86)에서 통과한 SIL 코드라도 타깃 MCU의 비트 폭, 엔디안, 컴파일러 최적화에 따라 연산시간이나 동작이 달라질 수 있어 PIL 검증이 필수입니다.', source: '추가자료 p.4' },
+  { id: 'Q105', category: '테스트 환경 및 기법 분류', concept: 'HIL 테스트 환경 특징', type: '복수 선택형', difficulty: '중',
+    question: '추가자료(p.5)에 따라 HIL(Hardware-In-the-loop) 테스트 환경의 주요 확인 항목에 해당하는 것을 모두 고르시오.',
+    options: [
+      '통합 동작 (실제 ECU와 실제 I/O·통신 인터페이스 연동)',
+      '고장주입 (Fault Injection - 센서/액추에이터 고장 조건 모사)',
+      '실시간 타이밍 (Timing) 및 실차 전 검증',
+      'C 코드 작성 전 수식 모델의 수학적 미분 방정식 유도'
+    ],
+    answer: [0, 1, 2], explanation: '추가자료 p.5에 따라 HIL은 실제 ECU를 HIL 랙·I/O 보드·부하박스·실시간 시뮬레이터와 연결하여 통합 동작, 고장주입, 타이밍, 실차 전 검증을 수행합니다.',
+    wrongExplanation: '수식 모델 검증은 초기 MIL 단계의 역할입니다.', source: '추가자료 p.5' },
+  { id: 'Q106', category: '테스트 환경 및 기법 분류', concept: 'PIL vs HIL 핵심 차이', type: '자동차 ECU 사례 분석형', difficulty: '상',
+    question: '엔지니어 A는 "타깃 MCU 개발 보드와 JTAG 디버거에 코드를 올려 PC 가상 플랜트와 통신하며 10ms 태스크 연산시간을 측정"했고, 엔지니어 B는 "양산형 ECU 본품의 커넥터 핀에 HIL 랙과 부하박스를 연결해 실시간 단락 고장을 주입"했다. A와 B가 사용한 테스트 환경은 각각 무엇인가?',
+    options: [
+      'A: PIL / B: HIL',
+      'A: SIL / B: PIL',
+      'A: MIL / B: SIL',
+      'A: HIL / B: Bench'
+    ],
+    answer: [0], explanation: '개발 보드/디버거와 PC 가상 플랜트를 연결해 연산시간을 측정하는 환경은 PIL(추가자료 p.4)이며, 실제 ECU 본품과 HIL 랙·부하박스로 실시간 고장주입을 수행하는 환경은 HIL(추가자료 p.5)입니다.',
+    wrongExplanation: 'PIL은 프로세서(MCU) 수준 검증, HIL은 주변 I/O와 통신 트랜시버까지 포함된 완성 ECU 하드웨어 수준의 실시간 검증입니다.', source: '추가자료 p.4-5' },
+  { id: 'Q107', category: '테스트 환경 및 기법 분류', concept: 'Dynamic Test Design Techniques 3대 분류', type: '4지선다형', difficulty: '하',
+    question: '추가자료(p.6) Technique Taxonomy에서 동적 테스트 설계 기법(Dynamic Test Design Techniques)의 3대 분류와 도출 근거가 올바르게 연결된 것은?',
+    options: [
+      'Specification-based(명세/요구사항의 입출력·상태) / Structure-based(코드/구조/분기/데이터 흐름) / Experience-based(경험·도메인 지식·이전 결함)',
+      'Specification-based(소스 코드 분기) / Structure-based(테스터 직관) / Experience-based(요구사항 명세서)',
+      'MIL-based / SIL-based / HIL-based',
+      'Static-based / Compiler-based / Hardware-based'
+    ],
+    answer: [0], explanation: '추가자료 p.6에 따라 동적 테스트 설계 기법은 Specification-based, Structure-based, Experience-based 세 가지로 분류됩니다.',
+    wrongExplanation: '각 기법이 무엇을 출발점(Test Basis/원천)으로 삼아 테스트 케이스를 도출하는지가 분류 기준입니다.', source: '추가자료 p.6' },
+  { id: 'Q108', category: '테스트 환경 및 기법 분류', concept: 'Experience-based 세부 기법', type: '4지선다형', difficulty: '중',
+    question: '추가자료(p.6) Technique Taxonomy에서 Experience-based(경험 기반) 기법으로 분류된 세 가지 기법은 무엇인가?',
+    options: [
+      'Error Guessing, Exploratory Testing, Software Attacks / Ad Hoc',
+      'Boundary Value Analysis, State Transition Testing, Decision Table Testing',
+      'Statement Coverage, Branch Coverage, Data Flow Testing',
+      'MIL, SIL, PIL'
+    ],
+    answer: [0], explanation: '추가자료 p.6 도표의 Experience-based 열에는 Error Guessing, Exploratory Testing, Software Attacks / Ad Hoc 세 가지가 명시되어 있습니다.',
+    wrongExplanation: 'BVA/State Transition/Decision Table은 Specification-based이며, Statement/Branch/Data Flow는 Structure-based입니다.', source: '추가자료 p.6' },
+  { id: 'Q109', category: '테스트 환경 및 기법 분류', concept: '테스트 기법 선택 기준 4가지', type: '복수 선택형', difficulty: '중',
+    question: '추가자료(p.6)에서 제시한 테스트 설계 기법의 "선택 기준"에 해당하는 항목을 모두 고르시오.',
+    options: [
+      '테스트 기준의 성격 및 테스트 대상 구조',
+      '위험 수준 (Risk Level / ASIL)',
+      '사용 가능한 시간·도구·역량',
+      '차량 외장 도장 색상 옵션'
+    ],
+    answer: [0, 1, 2], explanation: '추가자료 p.6 하단에 명시된 선택 기준은 ① 테스트 기준의 성격, ② 테스트 대상 구조, ③ 위험 수준, ④ 사용 가능한 시간·도구·역량 4가지입니다.',
+    wrongExplanation: '외장 도장 색상은 SW 테스트 설계 기법 선택과 무관합니다.', source: '추가자료 p.6' },
+  { id: 'Q110', category: '테스트 환경 및 기법 분류', concept: 'HIL 환경과 MIL/SIL 환경 차이', type: '참 / 거짓', difficulty: '하',
+    question: '[참/거짓] MIL과 SIL은 PC 시뮬레이션 환경에서 모델이나 C 코드를 검증하므로 실제 ECU 하드웨어가 필요하지 않지만, HIL은 실제 ECU를 HIL 랙·I/O 보드·부하박스와 연결하여 실시간으로 차량 및 고장 조건을 모사한다.',
+    options: ['참 (True)', '거짓 (False)'],
+    answer: [0], explanation: '추가자료 p.2~5에 따라 MIL/SIL은 PC 기반 가상 환경에서 조기 검증을 수행하고, HIL은 실제 ECU 하드웨어와 실시간 I/O 부하 장비를 연결하여 실차 전 통합·고장주입 검증을 수행합니다.',
+    wrongExplanation: '각 환경의 하드웨어 실물 포함 여부와 실시간성 차이를 정확히 서술하고 있습니다.', source: '추가자료 p.2-5' }
 ];
 
 // ============================================================================
@@ -2060,7 +2220,7 @@ function renderDashboardView(container) {
         <div>
           <span class="text-xs font-extrabold text-hyundai-blue">Automotive SW Testing Academy · Learning Dashboard</span>
           <h2 class="text-2xl font-extrabold text-hyundai-navy mt-0.5">자동차 소프트웨어 테스트 학습 대시보드</h2>
-          <p class="text-xs sm:text-sm text-slate-600 mt-1">모빌리티 SW 개론 및 프로세스 03일차(86p) 전 범위 이론·비주얼 시뮬레이터·100문항 문제은행</p>
+          <p class="text-xs sm:text-sm text-slate-600 mt-1">모빌리티 SW 개론 및 프로세스 03일차 본문(86p) + 테스트 환경 추가자료(6p) 전 범위 · 110문항 문제은행</p>
         </div>
         <div class="flex flex-wrap gap-2">
           <button onclick="navigateTo('unit:${continueUnit.id}')" class="px-4 py-2.5 bg-hyundai-navy hover:bg-blue-900 text-white rounded-xl text-xs font-bold shadow transition">
@@ -2100,7 +2260,7 @@ function renderDashboardView(container) {
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div>
             <span class="px-2 py-0.5 rounded bg-hyundai-blue text-white text-[11px] font-extrabold">INTERACTIVE LAB HUB</span>
-            <h3 class="text-base sm:text-lg font-extrabold text-hyundai-navy mt-1">인터랙티브 시뮬레이션 실습실 (9종 바로 체험)</h3>
+            <h3 class="text-base sm:text-lg font-extrabold text-hyundai-navy mt-1">인터랙티브 시뮬레이션 실습실 (10종 바로 체험)</h3>
           </div>
           <span class="text-xs text-slate-500">원하는 실습 모듈을 선택하면 아래에서 즉시 시뮬레이션이 실행됩니다</span>
         </div>
@@ -2110,7 +2270,7 @@ function renderDashboardView(container) {
 
       <!-- Curriculum Quick Map -->
       <div class="bg-white p-6 rounded-2xl border border-hyundai-border shadow-sm space-y-4">
-        <h3 class="text-base font-bold text-hyundai-navy">전체 커리큘럼 로드맵 (총 22개 세부 단원)</h3>
+        <h3 class="text-base font-bold text-hyundai-navy">전체 커리큘럼 로드맵 (총 24개 세부 단원)</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           ${CURRICULUM_UNITS.map(u => {
             const doneUnit = appState.completedUnits.includes(u.id);
@@ -2161,6 +2321,7 @@ function renderDashboardView(container) {
   `;
 
   const dashLabs = [
+    { key: 'testEnvSim', label: '0. MIL·SIL·PIL·HIL 환경' },
     { key: 'ecuPracticeSim', label: '1. LCU HIL & PWM 파형' },
     { key: 'epSim', label: '2. 동등 분할 (EP)' },
     { key: 'bvaSim', label: '3. 경계값 현미경 (BVA)' },
@@ -2181,7 +2342,7 @@ function renderDashboardView(container) {
     renderInteractiveLab(document.getElementById('dash-lab-mount'), { simType: labKey });
   };
 
-  window.selectDashLab('ecuPracticeSim');
+  window.selectDashLab('testEnvSim');
 }
 
 // ============================================================================
@@ -2230,6 +2391,7 @@ function navigateTo(route) {
 function renderInteractiveLab(container, unit) {
   if (!container) return;
   switch (unit.simType) {
+    case 'testEnvSim': renderTestEnvLab(container); break;
     case 'standardsMap': renderStandardsMapLab(container); break;
     case 'testDesignFlow': renderTestDesignFlowLab(container); break;
     case 'epSim': renderEPLab(container); break;
@@ -2241,6 +2403,145 @@ function renderInteractiveLab(container, unit) {
     case 'ecuPracticeSim': renderECUPracticeLab(container); break;
     default: renderIso29119Explorer(container);
   }
+}
+
+// Lab X: X-in-the-Loop (MIL / SIL / PIL / HIL / Bench / Vehicle) Simulator
+function renderTestEnvLab(container) {
+  const envs = [
+    {
+      code: 'MIL', full: 'Model-In-the-Loop', color: '#0284C7', bg: 'bg-sky-50 border-sky-400',
+      leftNode: '제어 모델 (Control Model)', leftSub: '알고리즘 · 상태도 · 수식 모델',
+      rightNode: '가상 차량 / 플랜트 모델', rightSub: '가상 센서 · 액추에이터 · 도로 시나리오',
+      linkLabel: 'PC 모델링 툴 내 시뮬레이션 신호 교환',
+      target: '제어 알고리즘, 상태도, 수식 모델',
+      execEnv: '모델링 툴 / PC 시뮬레이터',
+      plantIo: '가상 차량, 센서, 액추에이터, 도로 시나리오',
+      checkPoint: '요구사항, 제어 로직, 알고리즘 동작',
+      hwRealism: '0% (100% 가상 PC 모델)'
+    },
+    {
+      code: 'SIL', full: 'Software-In-the-Loop', color: '#4F46E5', bg: 'bg-indigo-50 border-indigo-400',
+      leftNode: '소프트웨어 코드 (C Code)', leftSub: '자동 생성 코드 · 유닛/컴포넌트',
+      rightNode: '가상 차량 모델 & 시나리오', rightSub: 'PC 기반 가상 ECU · 자동화 리포트',
+      linkLabel: 'PC 테스트 자동화 환경 입출력 교환',
+      target: '생성 코드, C 코드, 소프트웨어 유닛/컴포넌트',
+      execEnv: 'PC 기반 가상 ECU / 테스트 자동화 환경',
+      plantIo: '가상 차량 모델과 테스트 시나리오',
+      checkPoint: '코드 로직, 인터페이스, 단위/통합 동작',
+      hwRealism: '20% (실제 C 코드 + 가상 환경)'
+    },
+    {
+      code: 'PIL', full: 'Processor-In-the-Loop', color: '#D97706', bg: 'bg-amber-50 border-amber-400',
+      leftNode: '실제 MCU 개발 보드 (Target)', leftSub: '타깃 프로세서 · 디버거 연결',
+      rightNode: '호스트 PC 가상 차량 환경', rightSub: 'PC 모델 / 테스트 시나리오 실행',
+      linkLabel: '디버거/통신으로 입출력 신호 교환',
+      target: '타깃 MCU/프로세서에서 실행되는 제어 코드',
+      execEnv: '개발 보드, 디버거, 호스트 PC',
+      plantIo: 'PC의 가상 차량/플랜트 모델',
+      checkPoint: '연산시간, 타깃 의존성, 컴파일러 영향',
+      hwRealism: '55% (실제 MCU + 가상 플랜트)'
+    },
+    {
+      code: 'HIL', full: 'Hardware-In-the-Loop', color: '#E11D48', bg: 'bg-rose-50 border-rose-400',
+      leftNode: '실제 ECU 본품 (Real ECU)', leftSub: '실제 I/O · 실제 CAN/LIN 통신',
+      rightNode: 'HIL 랙 & 실시간 시뮬레이터', rightSub: 'I/O 보드 · 부하박스 · 고장 모사',
+      linkLabel: '실시간(Real-Time) 전기/통신 신호 교환',
+      target: '실제 ECU, 실제 I/O, 실제 통신 인터페이스',
+      execEnv: 'HIL 랙, I/O 보드, 부하박스, 실시간 시뮬레이터',
+      plantIo: '센서/액추에이터/도로/고장 조건 모사',
+      checkPoint: '통합 동작, 고장주입, 타이밍, 실차 전 검증',
+      hwRealism: '85% (실제 ECU + 실시간 부하 모사)'
+    },
+    {
+      code: 'Bench / Vehicle', full: 'System Bench & Real Vehicle', color: '#059669', bg: 'bg-emerald-50 border-emerald-400',
+      leftNode: '통합 ECU & 실제 하네스/부품', leftSub: '멀티 제어기 네트워크 연동',
+      rightNode: '실차 / 주행시험장(Proving Ground)', rightSub: '실제 도로 · 기상 · 운전자 주행',
+      linkLabel: '실물 물리 배선 및 실제 차량 주행 환경',
+      target: '통합 제어기 시스템 및 완성 차량',
+      execEnv: '시스템 벤치 랙 / 실차 테스트 트랙',
+      plantIo: '실물 센서·액추에이터 및 실제 도로 환경',
+      checkPoint: '실물 간섭, 전자파/열 환경, 최종 사용자 Validation',
+      hwRealism: '100% (실물 부품 및 실차 환경)'
+    }
+  ];
+
+  container.innerHTML = `
+    <div class="space-y-4">
+      <div class="flex flex-wrap gap-2">
+        ${envs.map((e, i) => `
+          <button onclick="selectTestEnv(${i})" id="env-tab-${i}" class="px-3.5 py-2 rounded-xl text-xs font-extrabold border-2 transition">
+            ${e.code} <span class="font-normal opacity-85">(${e.full.split('-')[0]})</span>
+          </button>
+        `).join('')}
+      </div>
+
+      <div class="bg-slate-900 text-white p-4 rounded-xl space-y-2">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class="text-xs font-bold text-sky-300">Closed-Loop 테스트 환경 아키텍처 (추가자료 p.1~5)</span>
+          <span id="env-realism-badge" class="px-2.5 py-0.5 rounded-full bg-white/15 text-amber-300 text-xs font-bold"></span>
+        </div>
+        <svg viewBox="0 0 760 175" class="w-full h-auto">
+          <path d="M 275 58 Q 380 18 485 58" fill="none" stroke="#38BDF8" stroke-width="3" class="svg-flow-active" marker-end="url(#envArrow)"/>
+          <path d="M 485 118 Q 380 158 275 118" fill="none" stroke="#FBBF24" stroke-width="3" class="svg-flow-active" marker-end="url(#envArrow2)"/>
+          <text id="env-svg-link" x="380" y="92" text-anchor="middle" fill="#E2E8F0" font-size="11" font-weight="bold"></text>
+
+          <rect id="env-svg-left-box" x="30" y="42" width="240" height="90" rx="12" fill="#0284C7" stroke="#FDE047" stroke-width="2.5"/>
+          <text id="env-svg-left-title" x="150" y="80" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="bold"></text>
+          <text id="env-svg-left-sub" x="150" y="102" text-anchor="middle" fill="#E0F2FE" font-size="10.5"></text>
+
+          <rect x="490" y="42" width="240" height="90" rx="12" fill="#1E293B" stroke="#94A3B8" stroke-width="2"/>
+          <text id="env-svg-right-title" x="610" y="80" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="bold"></text>
+          <text id="env-svg-right-sub" x="610" y="102" text-anchor="middle" fill="#CBD5E1" font-size="10.5"></text>
+
+          <defs>
+            <marker id="envArrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#38BDF8"/></marker>
+            <marker id="envArrow2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#FBBF24"/></marker>
+          </defs>
+        </svg>
+      </div>
+
+      <div id="env-spec-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+    </div>
+  `;
+
+  window.selectTestEnv = (idx) => {
+    const e = envs[idx];
+    envs.forEach((item, i) => {
+      const btn = document.getElementById(`env-tab-${i}`);
+      btn.style.backgroundColor = i === idx ? item.color : '#FFFFFF';
+      btn.style.color = i === idx ? '#FFFFFF' : '#334155';
+      btn.style.borderColor = i === idx ? item.color : '#CBD5E1';
+    });
+
+    document.getElementById('env-realism-badge').textContent = `실물 하드웨어 반영도: ${e.hwRealism}`;
+    document.getElementById('env-svg-left-box').setAttribute('fill', e.color);
+    document.getElementById('env-svg-left-title').textContent = e.leftNode;
+    document.getElementById('env-svg-left-sub').textContent = e.leftSub;
+    document.getElementById('env-svg-right-title').textContent = e.rightNode;
+    document.getElementById('env-svg-right-sub').textContent = e.rightSub;
+    document.getElementById('env-svg-link').textContent = e.linkLabel;
+
+    document.getElementById('env-spec-cards').innerHTML = `
+      <div class="p-3.5 rounded-xl border-2 ${e.bg}">
+        <div class="text-[11px] font-extrabold text-slate-500">1. 테스트 대상</div>
+        <div class="text-xs sm:text-sm font-bold text-slate-900 mt-1">${e.target}</div>
+      </div>
+      <div class="p-3.5 rounded-xl border-2 ${e.bg}">
+        <div class="text-[11px] font-extrabold text-slate-500">2. 실행 환경</div>
+        <div class="text-xs sm:text-sm font-bold text-slate-900 mt-1">${e.execEnv}</div>
+      </div>
+      <div class="p-3.5 rounded-xl border-2 ${e.bg}">
+        <div class="text-[11px] font-extrabold text-slate-500">3. 플랜트 / 입출력</div>
+        <div class="text-xs sm:text-sm font-bold text-slate-900 mt-1">${e.plantIo}</div>
+      </div>
+      <div class="p-3.5 rounded-xl border-2 ${e.bg}">
+        <div class="text-[11px] font-extrabold text-slate-500">4. 주요 확인 항목</div>
+        <div class="text-xs sm:text-sm font-bold text-hyundai-navy mt-1">${e.checkPoint}</div>
+      </div>
+    `;
+  };
+
+  window.selectTestEnv(0);
 }
 
 // Lab 0: ISO 29119 Visual Process Architecture
@@ -3162,14 +3463,15 @@ function renderChapterQuizSelector(container) {
     { name: 'Decision Table / State Transition', count: 15, desc: '논리 조합, 유효/무효 전이, Guard 조건, Fail-safe 복귀' },
     { name: 'Use Case / Error Guessing', count: 10, desc: '시나리오 검증, Pairwise, Classification Tree, 현장 결함 예측' },
     { name: 'Statement / Branch / Condition Coverage', count: 15, desc: '구문·분기·조건 커버리지 계산, Short-circuit, C 코드 분석' },
-    { name: 'MC/DC / Function / Call Coverage', count: 15, desc: '독립성 쌍(Pair) 판정, N+1 공식, 호출 Edge 및 빌드 옵션' }
+    { name: 'MC/DC / Function / Call Coverage', count: 15, desc: '독립성 쌍(Pair) 판정, N+1 공식, 호출 Edge 및 빌드 옵션' },
+    { name: '테스트 환경 및 기법 분류', count: 10, desc: 'MIL · SIL · PIL · HIL · Bench · Vehicle 환경 및 Technique Taxonomy' }
   ];
 
   container.innerHTML = `
     <div class="max-w-5xl mx-auto space-y-6">
       <div class="bg-white p-6 rounded-2xl border border-hyundai-border shadow-sm">
         <h2 class="text-xl font-extrabold text-hyundai-navy">단원별 집중 평가 (Chapter & Topic Assessment)</h2>
-        <p class="text-xs sm:text-sm text-slate-600 mt-1">총 100문항의 문제은행에서 원하는 단원의 문항만 집중적으로 풀이하고 취약 개념을 점검하세요.</p>
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">총 110문항의 문제은행에서 원하는 단원의 문항만 집중적으로 풀이하고 취약 개념을 점검하세요.</p>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         ${categories.map(cat => `
@@ -3199,7 +3501,7 @@ function extractBalanced15Questions() {
   const shuffledCats = [...categories].sort(() => Math.random() - 0.5);
   shuffledCats.forEach((cat, idx) => {
     const pool = QUESTION_BANK.filter(q => q.category === cat).sort(() => Math.random() - 0.5);
-    const takeCount = idx < 7 ? 2 : 1;
+    const takeCount = idx < 6 ? 2 : 1;
     for (let i = 0; i < takeCount && i < pool.length; i++) picked.push(pool[i]);
   });
   return picked.sort(() => Math.random() - 0.5);
@@ -3440,13 +3742,13 @@ function renderQuestionBankView(container) {
       <div class="bg-white p-6 rounded-2xl border border-hyundai-border shadow-sm space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 class="text-xl font-extrabold text-hyundai-navy">전체 문제은행 (100문항 완비)</h2>
-            <p class="text-xs text-slate-500 mt-0.5">교재의 모든 표준, 설계 기법, 커버리지 계산, ECU 사례 문항과 상세 해설을 열람할 수 있습니다.</p>
+            <h2 class="text-xl font-extrabold text-hyundai-navy">전체 문제은행 (110문항 완비)</h2>
+            <p class="text-xs text-slate-500 mt-0.5">교재 본문 및 추가자료(MIL·SIL·PIL·HIL·Technique Taxonomy) 전 범위 문항과 상세 해설을 열람할 수 있습니다.</p>
           </div>
-          <span id="qb-count-badge" class="px-3 py-1 rounded-full bg-blue-50 text-hyundai-navy text-xs font-bold">총 100문항</span>
+          <span id="qb-count-badge" class="px-3 py-1 rounded-full bg-blue-50 text-hyundai-navy text-xs font-bold">총 110문항</span>
         </div>
         <div class="flex flex-wrap gap-1.5" id="qb-cat-filters"></div>
-        <input type="text" id="qb-search-input" placeholder="키워드 검색 (예: MC/DC, SOTIF, 500ms, BVA, Call Coverage...)" oninput="filterQuestionBank()" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm focus:outline-none focus:border-hyundai-blue">
+        <input type="text" id="qb-search-input" placeholder="키워드 검색 (예: MIL, PIL, HIL, MC/DC, SOTIF, 500ms, BVA...)" oninput="filterQuestionBank()" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm focus:outline-none focus:border-hyundai-blue">
       </div>
       <div id="qb-list-container" class="space-y-4"></div>
     </div>
@@ -3466,7 +3768,7 @@ function renderQuestionBankView(container) {
       return matchCat && matchText;
     });
 
-    document.getElementById('qb-count-badge').textContent = `검색 결과: ${filtered.length} / 100문항`;
+    document.getElementById('qb-count-badge').textContent = `검색 결과: ${filtered.length} / ${QUESTION_BANK.length}문항`;
     document.getElementById('qb-list-container').innerHTML = filtered.map(q => `
       <details class="bg-white p-5 rounded-xl border border-hyundai-border shadow-sm group">
         <summary class="list-none cursor-pointer space-y-2">
@@ -3565,7 +3867,7 @@ function renderFinalAnalysisView(container) {
     <div class="max-w-5xl mx-auto space-y-6 pb-12">
       <div class="bg-white p-6 rounded-2xl border border-hyundai-border shadow-sm">
         <h2 class="text-xl font-extrabold text-hyundai-navy">최종 학습 분석 리포트 (Final Learning Analytics)</h2>
-        <p class="text-xs text-slate-500 mt-1">8대 핵심 출제 영역별 누적 풀이 데이터와 학습 성취도를 종합 진단합니다.</p>
+        <p class="text-xs text-slate-500 mt-1">9대 핵심 출제 영역별 누적 풀이 데이터와 학습 성취도를 종합 진단합니다.</p>
       </div>
 
       <div class="bg-white p-6 rounded-2xl border border-hyundai-border shadow-sm space-y-4">
