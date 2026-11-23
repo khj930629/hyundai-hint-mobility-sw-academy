@@ -6,9 +6,9 @@
 
 **📅 학습 페이지 바로가기**
 
-- [DAY 01](https://github.com/khj930629/hyundai-hint-mobility-sw-academy/hint_mobility-sw-academy)
-- [DAY 02](https://github.com/khj930629/hyundai-hint-mobility-sw-academy/hint_mobility-sw-academy2)
-- [DAY 03](https://github.com/khj930629/hyundai-hint-mobility-sw-academy/hint_mobility-sw-academy3)
+- [DAY 01](https://khj930629.github.io/hyundai-hint-mobility-sw-academy/hint_mobility-sw-academy)
+- [DAY 02](https://khj930629.github.io/hyundai-hint-mobility-sw-academy/hint_mobility-sw-academy2)
+- [DAY 03](https://khj930629.github.io/hyundai-hint-mobility-sw-academy/hint_mobility-sw-academy3)
 
 ---
 
