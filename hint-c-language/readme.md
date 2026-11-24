@@ -1,5 +1,8 @@
 # C Language
 
+**📅 학습 페이지 바로가기**
+- [DAY 01](https://khj930629.github.io/hyundai-hint-mobility-sw-academy/hint-c-language/hint_c_programming_lab.html)
+
 ## 🚗 Introduction
 
 현대 HINT 모빌리티 SW 아카데미에서 학습하는 C언어의 기초 및 응용 내용을 정리하는 공간입니다.
