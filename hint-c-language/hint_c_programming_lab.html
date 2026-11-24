@@ -1,0 +1,3890 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HINT C Programming Lab — 모빌리티 SW 아카데미</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: {
+              900: '#071528',
+              800: '#0B1F3A',
+              700: '#132E52',
+            },
+            mobility: {
+              600: '#0056B3',
+              500: '#1E6FD9',
+              100: '#E6F0FC',
+            },
+            editor: {
+              950: '#090F1D',
+              900: '#0F172A',
+              800: '#1E293B',
+              700: '#334155',
+            }
+          },
+          fontFamily: {
+            sans: ['"Noto Sans KR"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'Consolas', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #F8FAFC;
+      color: #1E293B;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    code, pre, textarea.code-font {
+      font-family: 'JetBrains Mono', Consolas, monospace;
+    }
+    /* Custom subtle scrollbars */
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.06); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.45); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(71, 85, 105, 0.7); }
+    @keyframes terminalBlink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+    .terminal-cursor {
+      animation: terminalBlink 1s infinite;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef, useCallback } = React;
+
+    /* =========================================================================
+       1. CURRICULUM DATA (All 10 Units grounded strictly in 강의자료.pdf 1~234p)
+       ========================================================================= */
+    const LESSONS = [
+      {
+        id: 'u1_intro',
+        unit: '0. 프로그램 개요 및 개발환경',
+        pageRef: 'p.1~47',
+        vizId: 'exec_flow',
+        title: 'C 프로그램의 실행 과정과 Visual Studio 환경',
+        objectives: [
+          '프로그램, 명령어, 기계어, 어셈블리어, 고급언어의 관계를 이해한다(p.3~9).',
+          'C 소스 코드(.c)가 컴파일러를 거쳐 CPU에서 실행되는 흐름을 파악한다(p.2, p.10~12).',
+          'Visual Studio에서 C 프로젝트를 만들고 main.c 작성 후 Ctrl+F5로 실행한다(p.22~47).',
+        ],
+        coreConcepts: [
+          '컴파일러(Compiler): 사람이 작성한 C 고급언어를 CPU가 이해하는 기계어로 번역한다(p.2, p.11).',
+          '#include <stdio.h>: 표준 입출력(printf, scanf) 기능을 불러오는 전처리기 지시자(p.20, p.85).',
+          '주석(/* ... */, //)과 들여쓰기(indentation): 실행에는 영향을 주지 않고 코드 가독성을 높인다(p.16~19).',
+        ],
+        easyExplanation:
+          '사람이 한국어나 영어로 편지를 쓰듯 C언어로 명령을 적으면, 컴파일러라는 통역사가 컴퓨터(CPU)가 바로 알아듣는 0과 1의 기계어로 번역해 실행합니다.',
+        analogy:
+          '햄버거 가게에서 주문 순서를 적은 메모(프로그램)를 주방에 전달하면 순서대로 조리해 나오는 과정(p.3)과 같습니다.',
+        diagramNote: '[C 소스코드 main.c] → (Compiler 번역) → [목적/실행파일 .exe] → [CPU 실행 & 콘솔 출력]',
+        originalCode: `#include <stdio.h>
+
+/* 첫 번째 덧셈 프로그램 (교재 p.13~15) */
+int main(void) {
+    int x = 100;
+    int y = 200;
+    int sum = x + y;
+    printf("두수의합: %d\\n", sum);
+    return 0;
+}`,
+        codeNoteOriginal:
+          '교재 p.13~15의 덧셈 프로그램 #1 원문 구조입니다. 변수 x, y에 100과 200을 저장한 뒤 합계를 sum에 담아 출력합니다.',
+        codeNoteSupplement:
+          'Visual Studio에서 새 항목을 추가할 때 기본 확장자가 main.cpp로 생성되므로 C언어 표준 학습을 위해 main.c로 변경하는 것을 권장합니다(p.35~36).',
+        expectedOutput: '두수의합: 300',
+        practiceSample: `#include <stdio.h>
+
+int main(void) {
+    int x = 100;
+    int y = 200;
+    int sum = x + y;
+    printf("Hello World!\\n");
+    printf("두수의합: %d\\n", sum);
+    return 0;
+}`,
+        summary: [
+          'C 프로그램은 main() 함수에서 시작하여 return 0; 으로 종료된다(p.85).',
+          '문장의 끝에는 반드시 세미콜론(;)을 붙인다(p.15).',
+        ],
+        checkQuiz: {
+          question: '사람이 작성한 C언어 소스 코드를 컴퓨터가 실행할 수 있는 기계어로 번역해 주는 도구는 무엇인가요? (p.2, p.11)',
+          options: ['디버거(Debugger)', '컴파일러(Compiler)', '메모장(Notepad)', '운영체제 커널'],
+          answerIndex: 1,
+          explanation: '컴파일러(Compiler)가 고급언어(C)를 기계어로 번역하여 실행 파일을 생성합니다.',
+        },
+      },
+      {
+        id: 'u2_vars',
+        unit: '1. 변수와 자료형',
+        pageRef: 'p.48~60',
+        vizId: 'var_memory',
+        title: '변수, 상수, 자료형과 식별자 명명 규칙',
+        objectives: [
+          '변수(값 변경 가능)와 상수(값 변경 불가)의 차이를 구분한다(p.49~51).',
+          '정수형(short, int, long), 실수형(float, double), 문자형(char)과 sizeof 연산자를 이해한다(p.52~53).',
+          '식별자 규칙에 맞는 올바른 변수 이름을 짓고 선언·초기화한다(p.54~60).',
+        ],
+        coreConcepts: [
+          '변수(Variable): 데이터를 저장하기 위해 메모리에 확보한 이름 붙은 공간(p.49~50).',
+          '자료형 크기(일반적 환경): char(1B), short(2B), int(4B), float(4B), double(8B) (p.52~53).',
+          '식별자 규칙: 영문자·숫자·밑줄(_)만 사용, 숫자로 시작 불가, 대소문자 구분, C 키워드(double, int 등) 불가(p.54~55).',
+        ],
+        easyExplanation:
+          '변수는 물건을 담아두는 이름표 달린 상자입니다. 상자 크기에 따라 작은 물건(char), 일반 정수(int), 정밀한 소수(double)를 알맞게 골라 담아야 합니다.',
+        analogy:
+          '물류 창고에서 부품 크기에 맞춰 소형·중형·대형 박스를 배정하고 바코드 이름표를 붙이는 것과 같습니다(p.50).',
+        diagramNote: 'int index = 7;  →  메모리 4바이트 공간 확보 [이름: index | 값: 7]',
+        originalCode: `#include <stdio.h>
+
+int main(void) {
+    char c = 'a';
+    int i = 7;
+    double interest_rate = 0.05;
+    printf("c=%c, i=%d, rate=%.2f\\n", c, i, interest_rate);
+    printf("int 크기: %d바이트\\n", (int)sizeof(int));
+    return 0;
+}`,
+        codeNoteOriginal:
+          '교재 p.53, p.60에 제시된 변수 선언·초기화 및 sizeof 연산자 활용 코드입니다.',
+        codeNoteSupplement:
+          '초기화하지 않은 지역 변수에는 알 수 없는 쓰레기 값이 들어 있으므로 선언과 동시에 초기화하는 습관이 안전합니다(p.60, p.189).',
+        expectedOutput: 'c=a, i=7, rate=0.05\nint 크기: 4바이트',
+        practiceSample: `#include <stdio.h>
+
+int main(void) {
+    char grade = 'A';
+    int score = 95;
+    double avg = 92.5;
+    printf("등급: %c, 점수: %d, 평균: %.1f\\n", grade, score, avg);
+    return 0;
+}`,
+        summary: [
+          '2nd_try(숫자 시작), Dollor#(특수문자), double(키워드)은 변수 이름으로 사용할 수 없다(p.55).',
+          'sizeof(자료형 또는 변수)로 바이트 크기를 확인할 수 있다(p.53).',
+        ],
+        checkQuiz: {
+          question: '다음 중 C언어 식별자(변수 이름)로 사용할 수 있는 것은 무엇인가요? (p.54~55)',
+          options: ['2nd_try', 'Dollor#', '_count', 'double'],
+          answerIndex: 2,
+          explanation: '_count는 밑줄(_)로 시작하고 영문자로 이어지므로 올바른 식별자입니다.',
+        },
+      },
+      {
+        id: 'u3_ops',
+        unit: '2. 수식과 연산자',
+        pageRef: 'p.61~74',
+        vizId: 'op_eval',
+        title: '산술·대입·관계 연산자와 형변환',
+        objectives: [
+          '산술 연산자(+, -, *, /, %)와 정수 나눗셈의 몫·나머지 특성을 이해한다(p.62).',
+          '대입(=) 및 복합 대입 연산자(+=, -=, *=, /=, %=)의 동작을 익힌다(p.63~66).',
+          '자동 형변환(올림/내림)과 명시적 형변환((double)x), 관계 연산자(1과 0)를 활용한다(p.67~74).',
+        ],
+        coreConcepts: [
+          '정수 나눗셈: 7 / 2 는 3(몫), 7 % 2 는 1(나머지)이 된다(p.62).',
+          '명시적 형변환(Type Cast): (double)x / y 처럼 피연산자 앞에 (자료형)을 붙여 원하는 타입으로 계산한다(p.72).',
+          '관계 연산자(==, !=, >, <, >=, <=): 조건이 참이면 1, 거짓이면 0을 반환한다(p.73~74).',
+        ],
+        easyExplanation:
+          '수학의 = 기호는 "양쪽이 같다"는 뜻이지만, C언어의 = 는 "오른쪽 계산 결과를 왼쪽 변수에 집어넣어라"는 대입 명령입니다. 같다는 비교는 == 를 씁니다.',
+        analogy:
+          '계산기에서 정수 버튼만 누르면 소수점 아래가 잘려 나가지만, 실수 모드로 전환((double))하면 소수점까지 정확히 계산되는 것과 같습니다.',
+        diagramNote: 'x = 7, y = 2  →  x / y = 3  |  (double)x / y = 3.5  |  (x > y) = 1',
+        originalCode: `#include <stdio.h>
+
+int main(void) {
+    int x = 7, y = 2;
+    printf("몫: %d, 나머지: %d\\n", x / y, x % y);
+    printf("실수 나눗셈: %.2f\\n", (double)x / y);
+    printf("x == y 결과: %d, x > y 결과: %d\\n", x == y, x > y);
+    return 0;
+}`,
+        codeNoteOriginal:
+          '교재 p.62, p.72, p.74의 산술 연산, 명시적 형변환, 관계 연산자 결과를 확인하는 예제입니다.',
+        codeNoteSupplement:
+          'double형 변수값을 int형 변수에 대입하면(i = 3.141592;) 소수점 이하가 버려지는 내림 변환이 자동으로 발생합니다(p.68).',
+        expectedOutput: '몫: 3, 나머지: 1\n실수 나눗셈: 3.50\nx == y 결과: 0, x > y 결과: 1',
+        practiceSample: `#include <stdio.h>
+
+int main(void) {
+    int a = 10;
+    a += 5;
+    printf("a += 5 결과: %d\\n", a);
+    printf("10 > 20 결과: %d\\n", 10 > 20);
+    return 0;
+}`,
+        summary: [
+          'x = x + 1 은 x += 1 과 같은 의미다(p.65).',
+          '관계 연산식의 결과는 참일 때 1, 거짓일 때 0이다(p.74).',
+        ],
+        checkQuiz: {
+          question: 'int x = 5, y = 2; 일 때 (double)(x / y) 의 값은 얼마인가요? (p.72)',
+          options: ['2.5', '2.0', '3.0', '0.5'],
+          answerIndex: 1,
+          explanation: '괄호 안의 정수 나눗셈 x / y 가 먼저 2로 계산된 뒤 double로 변환되므로 2.0이 됩니다.',
+        },
+      },
+      {
+        id: 'u4_io',
+        unit: '3. 1장. 간단한 계산',
+        pageRef: 'p.75~85',
+        vizId: 'dtype_cast',
+        title: 'printf()와 scanf() 표준 입출력 및 사과 가격 계산',
+        objectives: [
+          '서식 지정자(%d, %f, %c, %s, %u, %p)의 용도를 구분한다(p.79).',
+          'scanf()로 키보드 입력을 받을 때 변수 앞에 주소 연산자 &를 붙이는 이유를 안다(p.81).',
+          '사과 단가와 개수를 입력받아 전체 가격을 계산하는 프로그램을 완성한다(p.76~84).',
+        ],
+        coreConcepts: [
+          'printf("%5d", n): 최소 5칸 폭으로 오른쪽 정렬 출력, %.2f 는 소수점 아래 2자리 출력(p.80).',
+          'scanf("%d", &count): 입력받은 값을 저장할 변수의 메모리 주소(&)를 전달해야 한다(p.81).',
+          '변수의 읽기와 쓰기: 대입 연산자의 왼쪽은 쓰기(저장), 오른쪽은 읽기(값 참조)다(p.83).',
+        ],
+        easyExplanation:
+          'printf는 화면에 글자를 내보내는 확성기이고, scanf는 키보드로 들어온 값을 지정한 변수 상자 주소(&)로 배달해 주는 택배 기사입니다.',
+        analogy:
+          '택배를 받을 때 집 주소(&apple_count)를 적어주어야 정확한 상자에 물건이 도착하는 것과 같습니다(p.81).',
+        diagramNote: '키보드 입력 → scanf("%d", &count) → 메모리(&count) 저장 → printf 출력',
+        originalCode: `#include <stdio.h>
+
+int main(void) {
+    int price, count, total;
+    printf("사과 1개 가격을 입력하세요: ");
+    scanf("%d", &price);
+    printf("사과 개수를 입력하세요: ");
+    scanf("%d", &count);
+    total = price * count;
+    printf("전체 사과 가격은 %d원입니다.\\n", total);
+    return 0;
+}`,
+        codeNoteOriginal:
+          '교재 p.82~84의 사과 단가·개수 입력 및 전체 가격 계산 프로그램입니다.',
+        codeNoteSupplement:
+          'Visual Studio에서 scanf() 사용 시 보안 경고가 뜨면 #define _CRT_SECURE_NO_WARNINGS 를 코드 최상단에 추가합니다(p.83).',
+        expectedOutput: '사과 1개 가격을 입력하세요: 1500\n사과 개수를 입력하세요: 4\n전체 사과 가격은 6000원입니다.',
+        practiceSample: `#include <stdio.h>
+
+int main(void) {
+    int price, count;
+    printf("사과 단가와 개수를 공백으로 구분해 입력: ");
+    scanf("%d %d", &price, &count);
+    printf("총 결제 금액: %d원\\n", price * count);
+    return 0;
+}`,
+        summary: [
+          'scanf()에서는 반드시 변수 앞에 &를 붙인다(배열 문자열 제외, p.81, p.150).',
+          '\\n은 줄바꿈(개행) 제어 문자다(p.84).',
+        ],
+        checkQuiz: {
+          question: 'int num; 변수에 정수를 입력받기 위한 올바른 scanf 호출은? (p.81)',
+          options: ['scanf("%d", num);', 'scanf("%d", &num);', 'scanf("%f", &num);', 'scanf(&num);'],
+          answerIndex: 1,
+          explanation: '정수 서식 지정자 %d와 함께 변수의 주소(&num)를 전달해야 합니다.',
+        },
+      },
+      {
+        id: 'u5_cond',
+        unit: '4. 조건문 / 2장. 조건 따지기',
+        pageRef: 'p.86~100',
+        vizId: 'cond_branch',
+        title: 'if, if-else, else if, switch-case 분기 제어',
+        objectives: [
+          '조건에 따라 실행 흐름을 바꾸는 if, if-else, else if 구조를 작성한다(p.90~98).',
+          '논리 연산자(!(NOT), &&(AND), ||(OR))로 복합 조건식을 구성한다(p.89, p.94).',
+          'switch-case-break-default 문으로 다중 분기를 처리한다(p.99~100).',
+        ],
+        coreConcepts: [
+          '복합문(블록): 조건이 참일 때 실행할 문장이 2개 이상이면 중괄호 { }로 묶는다(p.88).',
+          '논리 연산자: &&는 둘 다 참일 때 참, ||는 하나라도 참이면 참, !는 참/거짓 반전(p.94).',
+          'switch문: 정수/문자 식의 값과 일치하는 case로 이동하며, break를 만나야 switch 블록을 빠져나간다(p.99~100).',
+        ],
+        easyExplanation:
+          '프로그램이 위에서 아래로만 걸어가다가 갈림길(조건식)을 만나면 표지판이 참(1)인지 거짓(0)인지 확인하고 한쪽 길만 선택해 걸어가는 구조입니다.',
+        analogy:
+          '사과가 30개 이상이면 박스로 포장하고, 그렇지 않으면 낱개로 포장하는 선별기(p.90~92)와 같습니다.',
+        diagramNote: '조건식 판정 → [참(1)] 분기 A 실행 / [거짓(0)] else 분기 B 실행 → 합류',
+        originalCode: `#include <stdio.h>
+
+int main(void) {
+    int score;
+    printf("점수를 입력하세요: ");
+    scanf("%d", &score);
+    if (score >= 90) {
+        printf("등급: A\\n");
+    } else if (score >= 80) {
+        printf("등급: B\\n");
+    } else {
+        printf("등급: C\\n");
+    }
+    return 0;
+}`,
+        codeNoteOriginal:
+          '교재 p.89, p.96~100의 학점/등급 판별 조건문 로직을 통합한 예제입니다.',
+        codeNoteSupplement:
+          'switch-case 문에서 break를 생략하면 아래 case 문장까지 연달아 실행(fall-through)되므로 의도한 경우가 아니라면 반드시 break를 작성하세요(p.100).',
+        expectedOutput: '점수를 입력하세요: 85\n등급: B',
+        practiceSample: `#include <stdio.h>
+
+int main(void) {
+    int num;
+    printf("정수를 입력하세요: ");
+    scanf("%d", &num);
+    if (num > 0) printf("양수입니다.\\n");
+    else if (num < 0) printf("음수입니다.\\n");
+    else printf("0입니다.\\n");
+    return 0;
+}`,
+        summary: [
+          '조건식에서 같음을 비교할 때는 = 이 아니라 == 을 사용한다(p.73, p.93).',
+          '80점 이상 90점 미만은 score >= 80 && score < 90 으로 표현한다(p.89).',
+        ],
+        checkQuiz: {
+          question: 'switch 문에서 일치하는 case 블록 실행 후 전체 switch 문을 즉시 빠져나오게 하는 키워드는? (p.99~100)',
+          options: ['continue', 'return', 'break', 'default'],
+          answerIndex: 2,
+          explanation: 'break 문을 만나야 다음 case로 넘어가지 않고 switch 블록을 종료합니다.',
+        },
+      },
+      {
+        id: 'u6_loop',
+        unit: '5. 반복문 / 3장. 반복시키기',
+        pageRef: 'p.101~122',
+        vizId: 'loop_trace',
+        title: 'while, while(1)+break, for, 중첩 반복문(구구단·별찍기)',
+        objectives: [
+          'while 문과 while(1) + break 탈출 패턴을 이해한다(p.108~111).',
+          'for(초기화; 조건식; 증감식) 구조로 1~100 합계(5050) 등을 계산한다(p.112~114).',
+          '중첩 for 문을 활용해 구구단과 별(*) 삼각형·피라미드 패턴을 출력한다(p.118~121).',
+        ],
+        coreConcepts: [
+          'while(1) 무한 루프: 조건이 항상 참(1)이므로 내부에서 특정 조건(예: 0 입력)일 때 break로 탈출한다(p.108~109).',
+          'for 루프 실행 순서: ①초기화(1회) → ②조건 검사 → ③본문 실행 → ④증감식 → ②로 복귀(p.112).',
+          '중첩 반복문: 바깥 루프 1회 실행될 때 안쪽 루프 전체가 반복된다(p.118~121).',
+        ],
+        easyExplanation:
+          '운동장 트랙을 10바퀴 돌 때 "지금 몇 바퀴째지?(초기화)" → "10바퀴 이하인가?(조건)" → "한 바퀴 달리기(본문)" → "바퀴 수 +1(증감)"을 되풀이하는 것입니다.',
+        analogy:
+          '0을 입력할 때까지 계속 숫자를 받아 처리하는 키오스크 입력 대기 루프(while(1), p.108)와 같습니다.',
+        diagramNote: '[초기화 i=1] → (i<=100 참?) → [sum += i] → [i++] ↺ (거짓이면 종료)',
+        originalCode: `#include <stdio.h>
+
+/* 1부터 100까지의 합 (교재 p.114 ch03_03.c) */
+int main(void) {
+    int i, sum = 0;
+    for (i = 1; i <= 100; i++) {
+        sum += i;
+    }
+    printf("1부터 100까지의 합: %d\\n", sum);
+    return 0;
+}`,
+        codeNoteOriginal:
+          '교재 p.114의 1부터 100까지 합을 구하는 for 반복문 예제입니다.',
+        codeNoteSupplement:
+          '누적 합계 변수 sum은 반드시 0으로 초기화해야 쓰레기 값이 더해지는 오류를 막을 수 있습니다.',
+        expectedOutput: '1부터 100까지의 합: 5050',
+        practiceSample: `#include <stdio.h>
+
+int main(void) {
+    int i, j;
+    for (i = 1; i <= 5; i++) {
+        for (j = 1; j <= i; j++) {
+            printf("*");
+        }
+        printf("\\n");
+    }
+    return 0;
+}`,
+        summary: [
+          '반복 횟수가 명확할 때는 for, 특정 조건이 될 때까지 반복할 때는 while이 편리하다(p.113).',
+          '중첩 for문에서 바깥 변수는 행(줄), 안쪽 변수는 열(칸)을 제어한다(p.119).',
+        ],
+        checkQuiz: {
+          question: 'for (int i = 0; i < 5; i++) 루프는 본문을 총 몇 번 실행하나요? (p.112)',
+          options: ['4번', '5번', '6번', '무한 번'],
+          answerIndex: 1,
+          explanation: 'i가 0, 1, 2, 3, 4일 때 참이므로 총 5번 실행됩니다.',
+        },
+      },
+      {
+        id: 'u7_array',
+        unit: '6. 배열',
+        pageRef: 'p.123~141',
+        vizId: 'array_mem',
+        title: '1차원 배열 선언, 인덱스(0부터 시작), 반복문 연동',
+        objectives: [
+          '같은 자료형의 데이터 여러 개를 연속된 메모리에 저장하는 배열을 선언한다(p.124~127).',
+          '배열 인덱스가 0부터 SIZE-1까지임을 이해하고 범위 초과 위험을 피한다(p.126, p.131).',
+          '#define SIZE 와 for 문을 결합해 합계·평균 및 메뉴 주문 금액을 계산한다(p.130, p.136~140).',
+        ],
+        coreConcepts: [
+          '배열 선언: int score[5]; 는 int형 원소 5개를 연속된 메모리 공간에 생성한다(p.125~127).',
+          '인덱스 범위 초과 주의: int grade[5]; 에서 유효 인덱스는 0~4이며, grade[5] 접근은 인접 메모리를 침범한다(p.131).',
+          '배열 복사/비교: a = b 나 a == b 로 배열 전체를 대입·비교할 수 없으며, for문으로 원소별 처리해야 한다(p.133~134).',
+        ],
+        easyExplanation:
+          '학생 60명의 점수를 저장하려고 변수를 60개 따로 만드는 대신, 60칸짜리 연속 사물함(score[0]~score[59]) 하나를 만들고 번호표(인덱스)로 꺼내 쓰는 것입니다.',
+        analogy:
+          '기차 객실 1호차, 2호차처럼 붙어 있는 연속 칸에 승객을 태우는 것과 같습니다. 단, C언어 기차는 0호차부터 시작합니다(p.126).',
+        diagramNote: 'int a[5] = {10, 20, 30, 40, 50};  →  [0]:10 | [1]:20 | [2]:30 | [3]:40 | [4]:50',
+        originalCode: `#include <stdio.h>
+#define SIZE 5
+
+int main(void) {
+    int scores[SIZE] = {80, 90, 75, 85, 100};
+    int i, sum = 0;
+    for (i = 0; i < SIZE; i++) {
+        sum += scores[i];
+    }
+    printf("합계: %d, 평균: %.1f\\n", sum, (double)sum / SIZE);
+    return 0;
+}`,
+        codeNoteOriginal:
+          '교재 p.130, p.136의 #define SIZE와 반복문을 이용한 배열 원소 합계 계산 예제입니다.',
+        codeNoteSupplement:
+          'C언어는 실행 시 배열 인덱스 범위를 자동 검사하지 않으므로 개발자가 직접 i < SIZE 조건을 지켜야 합니다(p.131).',
+        expectedOutput: '합계: 430, 평균: 86.0',
+        practiceSample: `#include <stdio.h>
+#define MENU_CNT 4
+
+int main(void) {
+    int prices[MENU_CNT] = {15000, 12000, 8000, 3000};
+    int counts[MENU_CNT] = {1, 2, 1, 2};
+    int total = 0, i;
+    for (i = 0; i < MENU_CNT; i++) {
+        total += prices[i] * counts[i];
+    }
+    printf("총 주문 금액: %d원\\n", total);
+    return 0;
+}`,
+        summary: [
+          '배열의 첫 번째 원소 인덱스는 항상 0, 마지막 원소는 크기-1이다(p.126).',
+          '배열 복사 및 비교는 반복문으로 각 원소를 순회하며 수행한다(p.133~134).',
+        ],
+        checkQuiz: {
+          question: 'int arr[10]; 으로 선언된 배열의 마지막 원소 접근 표기는 무엇인가요? (p.126, p.131)',
+          options: ['arr[10]', 'arr[9]', 'arr[11]', 'arr[0]'],
+          answerIndex: 1,
+          explanation: '크기가 10인 배열의 인덱스는 0부터 9까지이므로 마지막 원소는 arr[9]입니다.',
+        },
+      },
+      {
+        id: 'u8_str',
+        unit: '7. 문자열 및 표준 라이브러리',
+        pageRef: 'p.142~164',
+        vizId: 'array_mem',
+        title: '문자 배열과 NULL 문자(\\0), 문자열 함수, math/time 라이브러리',
+        objectives: [
+          'C언어에서 문자열이 char 배열이며 끝에 NULL 문자(\\0)가 붙는 이유를 이해한다(p.144~148).',
+          'scanf("%s")와 fgets(), 그리고 strlen(), strcmp(), strcpy()의 동작을 익힌다(p.150~159).',
+          '<math.h>(sqrt, fabs)와 <time.h>(srand, time, rand) 표준 함수를 활용한다(p.162~164).',
+        ],
+        coreConcepts: [
+          'NULL 문자(\\0): 문자열의 끝을 표시하는 아스키 코드 0 문자로, 배열 크기는 글자 수 + 1 이상이어야 한다(p.144~146).',
+          'strcmp(s1, s2): 두 문자열 내용이 같으면 0을 반환한다(s1 == s2 는 주소 비교이므로 주의, p.158).',
+          '난수 생성: srand((unsigned int)time(0)) 초기화 후 rand() % 45 + 1 로 1~45 범위 난수를 만든다(p.164).',
+        ],
+        easyExplanation:
+          '문자열은 글자 구슬들을 실에 꿰어 놓은 목걸이이고, 맨 끝에 달린 매듭(\\0)이 있어야 컴퓨터가 "아, 여기까지가 문자열 끝이구나!" 하고 멈춥니다.',
+        analogy:
+          '문장 끝에 마침표(.)가 없으면 다음 줄의 쓰레기 글자까지 계속 읽어 내려가는 것과 같습니다(p.144).',
+        diagramNote: 'char str[] = "abc";  →  [0]:\'a\' | [1]:\'b\' | [2]:\'c\' | [3]:\'\\0\' (총 4바이트)',
+        originalCode: `#include <stdio.h>
+#include <string.h>
+
+int main(void) {
+    char s1[20] = "HINT";
+    char s2[20];
+    strcpy(s2, s1);
+    printf("복사된 문자열: %s (길이: %d)\\n", s2, (int)strlen(s2));
+    if (strcmp(s1, s2) == 0) {
+        printf("두 문자열이 일치합니다.\\n");
+    }
+    return 0;
+}`,
+        codeNoteOriginal:
+          '교재 p.156~159의 strlen, strcmp, strcpy 문자열 처리 표준 라이브러리 예제입니다.',
+        codeNoteSupplement:
+          'fgets(str, 80, stdin)는 공백을 포함한 한 줄을 안전하게 읽지만 끝에 개행 문자(\\n)도 함께 저장하므로 필요 시 str[strlen(str)-1] = \'\\0\'; 로 제거합니다(p.157).',
+        expectedOutput: '복사된 문자열: HINT (길이: 4)\n두 문자열이 일치합니다.',
+        practiceSample: `#include <stdio.h>
+#include <string.h>
+#include <math.h>
+
+int main(void) {
+    char word[30] = "Mobility";
+    printf("단어: %s, 길이: %d\\n", word, (int)strlen(word));
+    printf("sqrt(16.0) = %.1f\\n", sqrt(16.0));
+    return 0;
+}`,
+        summary: [
+          '문자열 비교는 반드시 strcmp(str1, str2) == 0 을 사용한다(p.158).',
+          'char str[] = "abc"; 는 자동으로 4칸 배열이 되어 끝에 \\0 이 포함된다(p.147).',
+        ],
+        checkQuiz: {
+          question: '두 문자열 s1과 s2의 내용이 동일한지 비교할 때 올바른 조건식은? (p.158)',
+          options: ['s1 == s2', 'strcmp(s1, s2) == 0', 'strcpy(s1, s2)', 'strlen(s1) == strlen(s2)'],
+          answerIndex: 1,
+          explanation: 's1 == s2 는 메모리 주소를 비교하므로, 내용 비교에는 strcmp(s1, s2) == 0 을 사용해야 합니다.',
+        },
+      },
+      {
+        id: 'u9_func',
+        unit: '8. Chap. 8. 함수 및 함수와 변수',
+        pageRef: 'p.165~190',
+        vizId: 'func_call',
+        title: '함수 원형·정의·호출과 지역 변수 vs 전역 변수',
+        objectives: [
+          '함수를 사용해 중복 코드를 줄이고 프로그램을 모듈화하는 장점을 이해한다(p.166~170).',
+          '반환형, 함수 이름, 매개변수, 함수 원형 선언의 규칙을 익힌다(p.172~180).',
+          '지역 변수(블록 범위·생존 기간)와 전역 변수의 차이를 구분한다(p.182~190).',
+        ],
+        coreConcepts: [
+          '함수 원형(Prototype): main() 아래에 함수를 정의할 경우, 컴파일러에게 미리 알려주기 위해 상단에 선언한다(p.175).',
+          '지역 변수(Local Variable): 함수나 블록 { } 내부에 선언되며 블록을 벗어나면 소멸한다(p.184~187).',
+          '전역 변수(Global Variable): 함수 외부에 선언되어 파일 전체에서 공유되나, 남용 시 유지보수가 어려워진다(p.190).',
+        ],
+        easyExplanation:
+          '함수는 재료를 넣으면 정해진 작업을 처리해 결과물을 내보내는 자판기(블랙박스)입니다. 자판기 내부 부품(지역 변수)은 작동이 끝나면 정리됩니다.',
+        analogy:
+          '자동차 공장에서 엔진 조립, 도장, 검수 공정을 각각 전문 모듈(함수)로 나누어 호출하는 것과 같습니다(p.166).',
+        diagramNote: 'main() ──호출(인자 전달)──▶ add(a, b) [지역변수 생성] ──return 결과──▶ main() 복귀',
+        originalCode: `#include <stdio.h>
+
+void printBorder(int size);
+int add(int a, int b);
+
+int main(void) {
+    printBorder(20);
+    printf("합계: %d\\n", add(15, 25));
+    printBorder(20);
+    return 0;
+}
+
+void printBorder(int size) {
+    for (int i = 0; i < size; i++) printf("=");
+    printf("\\n");
+}
+
+int add(int a, int b) {
+    return a + b;
+}`,
+        codeNoteOriginal:
+          '교재 p.175~177의 함수 원형 선언, 매개변수가 있는 printBorder(), 반환값이 있는 함수 구조입니다.',
+        codeNoteSupplement:
+          '다른 함수에 같은 이름의 지역 변수가 있더라도 서로 독립된 메모리 공간을 사용하므로 영향을 주지 않습니다(p.185).',
+        expectedOutput: '====================\n합계: 40\n====================',
+        practiceSample: `#include <stdio.h>
+
+int getMax(int x, int y) {
+    if (x > y) return x;
+    return y;
+}
+
+int main(void) {
+    printf("더 큰 수: %d\\n", getMax(42, 77));
+    return 0;
+}`,
+        summary: [
+          '반환값이 없는 함수는 반환형을 void로 선언한다(p.176).',
+          '지역 변수는 선언된 블록 내부에서만 유효하며, 초기화하지 않으면 쓰레기 값을 가진다(p.189).',
+        ],
+        checkQuiz: {
+          question: '함수 내부에 선언되어 해당 함수가 종료되면 메모리에서 소멸하는 변수는 무엇인가요? (p.184~187)',
+          options: ['전역 변수', '지역 변수', '기호 상수', '헤더 파일'],
+          answerIndex: 1,
+          explanation: '지역 변수는 자신이 선언된 블록 진입 시 생성되고 블록을 벗어나면 소멸합니다.',
+        },
+      },
+      {
+        id: 'u10_ptr',
+        unit: '9. 포인터 및 포인터와 배열',
+        pageRef: 'p.191~234',
+        vizId: 'ptr_addr',
+        title: '메모리 주소(&), 포인터(*), 참조에 의한 호출, 포인터와 배열',
+        objectives: [
+          '메모리의 바이트 주소(&)와 주소를 저장하는 포인터 변수(*)의 개념을 이해한다(p.200~208).',
+          '값에 의한 호출(Call by Value)과 참조에 의한 호출(Call by Reference, swap)의 차이를 설명한다(p.219~222).',
+          '배열 이름 a가 첫 번째 원소 주소(&a[0])와 같음을 이해하고 포인터 연산 및 성적 관리 함수를 구현한다(p.223~234).',
+        ],
+        coreConcepts: [
+          '주소 연산자(&)와 간접 참조 연산자(*): p = &i; 일 때 p는 i의 주소를 담고, *p는 그 주소에 있는 i의 값에 접근한다(p.205~207).',
+          '포인터 주의점: 초기화하지 않은 포인터 역참조 금지, 사용 전 NULL 초기화 및 유효 주소 대입 확인(p.209~210).',
+          '배열과 포인터: a == &a[0], *(a + i) == a[i], 포인터 p = a 일 때 p[i] 표기도 동일하게 동작한다(p.223~227).',
+        ],
+        easyExplanation:
+          '일반 변수가 "택배 물건 자체"를 담는 상자라면, 포인터 변수는 "그 상자가 몇 번 사물함에 있는지 적힌 쪽지(메모리 주소)"를 담는 변수입니다.',
+        analogy:
+          '친구 집 물건을 직접 복제해 가져오는 것이 값에 의한 호출이고, 친구 집 주소(&)를 받아 찾아가 가구 위치를 직접 바꾸는 것이 참조에 의한 호출(swap)입니다(p.219~221).',
+        diagramNote: 'int i = 10 (&i: 0x1000)  ◀── [int *p = 0x1000]  |  *p = 20 실행 시 i가 20으로 변경',
+        originalCode: `#include <stdio.h>
+
+void swap(int *x, int *y) {
+    int temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+int main(void) {
+    int a = 100, b = 200;
+    printf("교환 전: a=%d, b=%d\\n", a, b);
+    swap(&a, &b);
+    printf("교환 후: a=%d, b=%d\\n", a, b);
+    return 0;
+}`,
+        codeNoteOriginal:
+          '교재 p.220~221의 포인터 매개변수를 이용한 참조에 의한 호출 swap(&a, &b) 예제입니다.',
+        codeNoteSupplement:
+          '교재 p.233~234의 학생 성적 관리 프로그램에서도 calculate(scores[i], &sum, &avg) 처럼 합계와 평균 두 개의 결과를 한 번에 돌려주기 위해 포인터 인자를 활용합니다.',
+        expectedOutput: '교환 전: a=100, b=200\n교환 후: a=200, b=100',
+        practiceSample: `#include <stdio.h>
+
+void calculate(int score[], int n, int *sum, double *avg) {
+    *sum = 0;
+    for (int i = 0; i < n; i++) {
+        *sum += score[i];
+    }
+    *avg = (double)(*sum) / n;
+}
+
+int main(void) {
+    int s[3] = {90, 85, 95};
+    int total = 0;
+    double average = 0.0;
+    calculate(s, 3, &total, &average);
+    printf("총점: %d, 평균: %.2f\\n", total, average);
+    return 0;
+}`,
+        summary: [
+          '포인터 선언 시 *는 포인터 변수임을 나타내고, 실행문에서 *p는 가리키는 대상의 값을 의미한다(p.205~207).',
+          '배열 이름 a는 첫 번째 원소의 주소 &a[0]와 같다(p.223).',
+        ],
+        checkQuiz: {
+          question: 'int a[5] = {10, 20, 30, 40, 50}; 일 때 *(a + 2) 와 같은 값을 가지는 표현은? (p.224~225)',
+          options: ['a[1]', 'a[2]', '&a[2]', 'a + 2'],
+          answerIndex: 1,
+          explanation: 'a + 2 는 인덱스 2번 원소의 주소(&a[2])이고, 이를 역참조한 *(a + 2)는 a[2](30)와 같습니다.',
+        },
+      },
+    ];
+
+    /* =========================================================================
+       2. CODING PRACTICE PROBLEMS (Levels 1~4 with Automated Test Cases)
+       ========================================================================= */
+    const PRACTICE_PROBLEMS = [
+      {
+        id: 'prob_l1_apple',
+        level: 1,
+        levelLabel: 'Level 1 · 기초 입출력',
+        lessonId: 'u4_io',
+        pageRef: 'p.82~84',
+        title: '사과 전체 가격 계산기',
+        description:
+          '사과 1개의 가격(정수)과 구매할 개수(정수)를 차례로 입력받아 전체 가격을 출력하는 프로그램을 완성하세요.',
+        ioCondition: '입력: 첫 줄에 단가(정수), 둘째 줄에 개수(정수)\n출력: 전체 가격 정수 1개만 출력 (예: 6000)',
+        sampleCode: `#include <stdio.h>
+
+int main(void) {
+    int price, count, total;
+    scanf("%d", &price);
+    scanf("%d", &count);
+    // TODO: total에 전체 가격을 계산해 저장하고 출력하세요.
+    total = 0;
+    printf("%d\\n", total);
+    return 0;
+}`,
+        hints: [
+          '1단계 힌트: 전체 가격은 단가(price)와 개수(count)를 곱한 값입니다(p.82).',
+          '2단계 힌트: total = price * count; 로 대입한 뒤 printf("%d\\n", total); 을 실행하세요.',
+        ],
+        explanation: '두 정수를 scanf("%d", &변수)로 입력받은 뒤 곱셈 연산자(*)로 총액을 구해 출력합니다(p.82~84).',
+        solutionCode: `#include <stdio.h>
+
+int main(void) {
+    int price, count, total;
+    scanf("%d", &price);
+    scanf("%d", &count);
+    total = price * count;
+    printf("%d\\n", total);
+    return 0;
+}`,
+        testCases: [
+          { desc: '기본 케이스 (1500원 × 4개)', input: '1500\n4\n', expected: '6000' },
+          { desc: '대량 구매 (800원 × 30개)', input: '800\n30\n', expected: '24000' },
+        ],
+      },
+      {
+        id: 'prob_l2_cond',
+        level: 2,
+        levelLabel: 'Level 2 · 조건 분기',
+        lessonId: 'u5_cond',
+        pageRef: 'p.90~98',
+        title: '사과 박스 포장 판별기',
+        description:
+          '사과 개수를 입력받아 30개 이상이면 "BOX", 30개 미만이면 "SINGLE"을 출력하는 프로그램을 작성하세요.',
+        ioCondition: '입력: 사과 개수(정수)\n출력: 30 이상이면 BOX, 미만이면 SINGLE',
+        sampleCode: `#include <stdio.h>
+
+int main(void) {
+    int apples;
+    scanf("%d", &apples);
+    // TODO: if-else 조건문으로 30개 이상 여부를 판별하세요.
+    return 0;
+}`,
+        hints: [
+          '1단계 힌트: 크거나 같음을 나타내는 관계 연산자는 >= 입니다(p.73, p.91).',
+          '2단계 힌트: if (apples >= 30) printf("BOX\\n"); else printf("SINGLE\\n"); 형태로 작성하세요.',
+        ],
+        explanation: '교재 p.90~92의 사과 박스 조건 분기(if-else) 예제를 응용한 문제입니다.',
+        solutionCode: `#include <stdio.h>
+
+int main(void) {
+    int apples;
+    scanf("%d", &apples);
+    if (apples >= 30) {
+        printf("BOX\\n");
+    } else {
+        printf("SINGLE\\n");
+    }
+    return 0;
+}`,
+        testCases: [
+          { desc: '경계값 테스트 (정확히 30개)', input: '30\n', expected: 'BOX' },
+          { desc: '미만 테스트 (29개)', input: '29\n', expected: 'SINGLE' },
+        ],
+      },
+      {
+        id: 'prob_l3_loop',
+        level: 3,
+        levelLabel: 'Level 3 · 반복과 누적',
+        lessonId: 'u6_loop',
+        pageRef: 'p.112~116',
+        title: '1부터 N까지 짝수의 합 구하기',
+        description:
+          '양의 정수 N을 입력받아 1부터 N까지의 정수 중 짝수만 모두 더한 합계를 출력하세요.',
+        ioCondition: '입력: 양의 정수 N\n출력: 1~N 범위 내 짝수의 합계',
+        sampleCode: `#include <stdio.h>
+
+int main(void) {
+    int n, i, sum = 0;
+    scanf("%d", &n);
+    // TODO: for 반복문과 나머지 연산자(%)를 이용해 짝수 합을 구하세요.
+    printf("%d\\n", sum);
+    return 0;
+}`,
+        hints: [
+          '1단계 힌트: 정수 i가 짝수인지 확인하려면 i % 2 == 0 조건을 사용합니다(p.62).',
+          '2단계 힌트: for (i = 1; i <= n; i++) 안에서 if (i % 2 == 0) sum += i; 를 수행하세요.',
+        ],
+        explanation: 'for 반복문과 나머지 연산자(%), 복합 대입 연산자(+=)를 결합해 조건부 누적 합계를 구합니다.',
+        solutionCode: `#include <stdio.h>
+
+int main(void) {
+    int n, i, sum = 0;
+    scanf("%d", &n);
+    for (i = 1; i <= n; i++) {
+        if (i % 2 == 0) {
+            sum += i;
+        }
+    }
+    printf("%d\\n", sum);
+    return 0;
+}`,
+        testCases: [
+          { desc: 'N = 10 (2+4+6+8+10)', input: '10\n', expected: '30' },
+          { desc: 'N = 7 (2+4+6)', input: '7\n', expected: '12' },
+        ],
+      },
+      {
+        id: 'prob_l4_ptr_grade',
+        level: 4,
+        levelLabel: 'Level 4 · 배열·함수·포인터 종합',
+        lessonId: 'u10_ptr',
+        pageRef: 'p.220~234',
+        title: '포인터를 활용한 3과목 총점 및 등급 판정',
+        description:
+          '학생의 3과목 점수를 입력받아 포인터 매개변수를 사용하는 calculate() 함수로 총점과 평균을 계산하고, 평균이 90 이상이면 A, 80 이상이면 B, 그 외에는 C를 출력하세요.',
+        ioCondition: '입력: 정수 3개 (국어 영어 수학 점수)\n출력: 총점 평균(소수점 1자리) 등급 (예: 270 90.0 A)',
+        sampleCode: `#include <stdio.h>
+
+void calculate(int score[], int n, int *sum, double *avg) {
+    // TODO: 배열 원소의 합을 *sum에, 평균을 *avg에 저장하세요.
+}
+
+char getGrade(double avg) {
+    // TODO: 90 이상 'A', 80 이상 'B', 그 외 'C' 반환
+    return 'C';
+}
+
+int main(void) {
+    int scores[3];
+    int total = 0;
+    double average = 0.0;
+    scanf("%d %d %d", &scores[0], &scores[1], &scores[2]);
+    calculate(scores, 3, &total, &average);
+    printf("%d %.1f %c\\n", total, average, getGrade(average));
+    return 0;
+}`,
+        hints: [
+          '1단계 힌트: 포인터 변수 sum이 가리키는 실제 변수에 값을 쓰려면 *sum = 0; 및 *sum += score[i]; 형태로 작성합니다(p.233).',
+          '2단계 힌트: 평균 계산 시 정수 나눗셈이 되지 않도록 *avg = (double)(*sum) / n; 으로 형변환하세요(p.72, p.233).',
+        ],
+        explanation: '교재 p.233~234의 학생 성적 관리 프로그램(배열 전달 + 포인터를 통한 다중 결과 반환 + 등급 함수)을 그대로 구현한 종합 문제입니다.',
+        solutionCode: `#include <stdio.h>
+
+void calculate(int score[], int n, int *sum, double *avg) {
+    *sum = 0;
+    for (int i = 0; i < n; i++) {
+        *sum += score[i];
+    }
+    *avg = (double)(*sum) / n;
+}
+
+char getGrade(double avg) {
+    if (avg >= 90.0) return 'A';
+    if (avg >= 80.0) return 'B';
+    return 'C';
+}
+
+int main(void) {
+    int scores[3];
+    int total = 0;
+    double average = 0.0;
+    scanf("%d %d %d", &scores[0], &scores[1], &scores[2]);
+    calculate(scores, 3, &total, &average);
+    printf("%d %.1f %c\\n", total, average, getGrade(average));
+    return 0;
+}`,
+        testCases: [
+          { desc: 'A등급 케이스 (90, 95, 85)', input: '90 95 85\n', expected: '270 90.0 A' },
+          { desc: 'B등급 케이스 (80, 85, 80)', input: '80 85 80\n', expected: '245 81.7 B' },
+        ],
+      },
+    ];
+
+    /* =========================================================================
+       3. QUIZ & REVIEW BANK (Unit MCQs, Output Prediction, Bug Finding, Fill-in)
+       ========================================================================= */
+    const QUIZ_BANK = [
+      {
+        id: 'q1',
+        unit: '0. 프로그램 개요',
+        type: '객관식',
+        pageRef: 'p.20, p.85',
+        question: 'printf()와 scanf() 표준 입출력 함수를 사용하기 위해 소스 코드 상단에 포함해야 하는 헤더 파일은?',
+        options: ['#include <math.h>', '#include <stdio.h>', '#include <string.h>', '#include <time.h>'],
+        answer: '#include <stdio.h>',
+        explanation: 'Standard Input/Output의 약자인 <stdio.h> 헤더 파일에 printf와 scanf가 선언되어 있습니다.',
+      },
+      {
+        id: 'q2',
+        unit: '1. 변수와 자료형',
+        type: '오류 찾기',
+        pageRef: 'p.54~55',
+        question: '다음 변수 선언문 중 컴파일 오류가 발생하는 코드는 무엇인가요?',
+        options: ['int _count = 0;', 'double interest_rate = 0.05;', 'int 2nd_try = 10;', 'char king3 = \'K\';'],
+        answer: 'int 2nd_try = 10;',
+        explanation: 'C언어 식별자는 숫자로 시작할 수 없으므로 2nd_try는 문법 오류입니다(p.55).',
+      },
+      {
+        id: 'q3',
+        unit: '2. 수식과 연산자',
+        type: '실행 결과 예측',
+        pageRef: 'p.62, p.74',
+        question: 'int a = 10, b = 3; 일 때 printf("%d %d", a % b, a == b); 의 출력 결과는?',
+        options: ['3 0', '1 0', '1 1', '3 1'],
+        answer: '1 0',
+        explanation: '10을 3으로 나눈 나머지(a % b)는 1이고, 10 == 3 은 거짓이므로 0이 출력됩니다.',
+      },
+      {
+        id: 'q4',
+        unit: '3. 1장. 간단한 계산',
+        type: '빈칸 채우기',
+        pageRef: 'p.81',
+        question: 'double rate; 변수에 실수를 입력받으려고 할 때 빈칸에 알맞은 코드는?  scanf("%lf", [   ]);',
+        options: ['rate', '*rate', '&rate', '%rate'],
+        answer: '&rate',
+        explanation: 'scanf() 함수에는 값을 저장할 변수의 메모리 주소(&rate)를 전달해야 합니다.',
+      },
+      {
+        id: 'q5',
+        unit: '4. 조건문',
+        type: '객관식',
+        pageRef: 'p.89, p.94',
+        question: '변수 score가 80 이상이고 90 미만인지 검사하는 올바른 C언어 논리식은?',
+        options: ['80 <= score < 90', 'score >= 80 && score < 90', 'score >= 80 || score < 90', 'score >= 80 ! score < 90'],
+        answer: 'score >= 80 && score < 90',
+        explanation: '두 조건을 동시에 만족해야 하므로 논리 AND 연산자(&&)로 연결해야 합니다.',
+      },
+      {
+        id: 'q6',
+        unit: '6. 배열',
+        type: '오류 찾기',
+        pageRef: 'p.131, p.133',
+        question: 'int a[5] = {1, 2, 3, 4, 5}, b[5]; 일 때 잘못된 설명 또는 코드는?',
+        options: ['a[0]의 값은 1이다.', 'a[4]의 값은 5이다.', 'b = a; 로 배열 전체를 한 번에 복사할 수 있다.', 'a[5]에 접근하면 배열 범위를 초과한다.'],
+        answer: 'b = a; 로 배열 전체를 한 번에 복사할 수 있다.',
+        explanation: 'C언어에서 배열 이름에 직접 대입(b = a)할 수 없으며 반복문으로 원소별 복사를 해야 합니다(p.133).',
+      },
+      {
+        id: 'q7',
+        unit: '7. 문자열',
+        type: '객관식',
+        pageRef: 'p.144~146',
+        question: '문자열 "ABC"를 문자 배열에 안전하게 저장하기 위해 필요한 최소 배열 크기는 몇 바이트인가요?',
+        options: ['2바이트', '3바이트', '4바이트', '5바이트'],
+        answer: '4바이트',
+        explanation: '\'A\', \'B\', \'C\' 세 글자 뒤에 문자열의 끝을 알리는 NULL 문자(\'\\0\') 1바이트가 추가로 필요합니다.',
+      },
+      {
+        id: 'q8',
+        unit: '9. 포인터와 배열',
+        type: '실행 결과 예측',
+        pageRef: 'p.205~207, p.220',
+        question: 'int x = 10; int *p = &x; *p = 50; 실행 후 x의 값은 얼마인가요?',
+        options: ['10', '50', '0', 'x의 메모리 주소값'],
+        answer: '50',
+        explanation: '포인터 p가 변수 x의 주소를 가리키므로 *p = 50; 은 곧 x에 50을 저장하는 것과 같습니다.',
+      },
+    ];
+
+    /* =========================================================================
+       4. LOCAL STORAGE SCHEMA & INITIAL DEFAULTS
+       ========================================================================= */
+    const STORAGE_KEYS = {
+      progress: 'hint_c_lab:v1:progress',
+      practice: 'hint_c_lab:v1:practice',
+      quiz: 'hint_c_lab:v1:quiz',
+      snippets: 'hint_c_lab:v1:snippets',
+      editorDraft: 'hint_c_lab:v1:editorDraft',
+    };
+
+    const DEFAULT_PROGRESS = {
+      completedLessons: [],
+      lastVisited: { menu: 'theory', lessonId: 'u1_intro', updatedAt: new Date().toISOString() },
+      activityLog: [],
+    };
+
+    const DEFAULT_PRACTICE = {
+      solvedIds: [],
+      attempts: {},
+    };
+
+    const DEFAULT_QUIZ = {
+      history: [],
+      wrongIds: [],
+    };
+
+    const DEFAULT_SNIPPETS = [
+      {
+        id: 'snip_add',
+        title: '덧셈 프로그램 #1 (p.13)',
+        code: `#include <stdio.h>\n\nint main(void) {\n    int x = 100;\n    int y = 200;\n    int sum = x + y;\n    printf("두수의합: %d\\n", sum);\n    return 0;\n}`,
+        stdin: '',
+        updatedAt: '기본 예제',
+      },
+      {
+        id: 'snip_apple',
+        title: '사과 가격 계산 (p.82)',
+        code: `#include <stdio.h>\n\nint main(void) {\n    int price, count;\n    printf("사과 단가를 입력하세요: ");\n    scanf("%d", &price);\n    printf("사과 개수를 입력하세요: ");\n    scanf("%d", &count);\n    printf("전체 사과 가격은 %d원입니다.\\n", price * count);\n    return 0;\n}`,
+        stdin: '',
+        updatedAt: '기본 예제',
+      },
+      {
+        id: 'snip_while1',
+        title: 'while(1) + break 반복 (p.108)',
+        code: `#include <stdio.h>\n\nint main(void) {\n    int num;\n    while (1) {\n        printf("숫자를 입력하세요 (0 입력 시 종료): ");\n        scanf("%d", &num);\n        if (num == 0) {\n            printf("프로그램을 종료합니다.\\n");\n            break;\n        }\n        printf("입력한 숫자: %d\\n", num);\n    }\n    return 0;\n}`,
+        stdin: '',
+        updatedAt: '기본 예제',
+      },
+      {
+        id: 'snip_swap',
+        title: '포인터 swap 함수 (p.220)',
+        code: `#include <stdio.h>\n\nvoid swap(int *x, int *y) {\n    int temp = *x;\n    *x = *y;\n    *y = temp;\n}\n\nint main(void) {\n    int a = 10, b = 20;\n    printf("교환 전: a=%d, b=%d\\n", a, b);\n    swap(&a, &b);\n    printf("교환 후: a=%d, b=%d\\n", a, b);\n    return 0;\n}`,
+        stdin: '',
+        updatedAt: '기본 예제',
+      },
+    ];
+
+    function safeLoad(key, fallback) {
+      try {
+        const raw = window.localStorage.getItem(key);
+        if (!raw) return fallback;
+        const parsed = JSON.parse(raw);
+        return parsed ?? fallback;
+      } catch (err) {
+        console.warn('localStorage load fallback for', key, err);
+        return fallback;
+      }
+    }
+
+    function safeSave(key, value) {
+      try {
+        window.localStorage.setItem(key, JSON.stringify(value));
+      } catch (err) {
+        console.warn('localStorage save error for', key, err);
+      }
+    }
+
+    /* =========================================================================
+       5. CLIENT-SIDE C EXECUTION ENGINE (Supports both Interactive Terminal
+          async stdin pausing AND synchronous batch grading for Practice tests)
+       ========================================================================= */
+    function formatPrintf(fmt, args) {
+      let argIdx = 0;
+      let out = '';
+      let i = 0;
+      while (i < fmt.length) {
+        if (fmt[i] === '%' && i + 1 < fmt.length) {
+          if (fmt[i + 1] === '%') {
+            out += '%';
+            i += 2;
+            continue;
+          }
+          const match = fmt.slice(i).match(/^%([-+0 #]*)(\d+)?(?:\.(\d+))?(?:l|ll|h)?([diuoxXfFeEgGaAcsp])/);
+          if (match) {
+            const fullSpec = match[0];
+            const flags = match[1] || '';
+            const width = match[2] ? parseInt(match[2], 10) : 0;
+            const prec = match[3] !== undefined ? parseInt(match[3], 10) : null;
+            const type = match[4];
+            const val = args[argIdx++];
+            let formatted = '';
+
+            if (type === 'd' || type === 'i') {
+              const num = Number.isFinite(Number(val)) ? Math.trunc(Number(val)) : 0;
+              formatted = String(num);
+            } else if (type === 'u') {
+              const num = Number.isFinite(Number(val)) ? (Math.trunc(Number(val)) >>> 0) : 0;
+              formatted = String(num);
+            } else if (type === 'f' || type === 'F') {
+              const num = Number.isFinite(Number(val)) ? Number(val) : 0;
+              const p = prec !== null ? prec : 6;
+              formatted = num.toFixed(p);
+            } else if (type === 'c') {
+              if (typeof val === 'string') formatted = val.charAt(0) || '';
+              else if (typeof val === 'number') formatted = String.fromCharCode(val);
+              else formatted = '';
+            } else if (type === 's') {
+              formatted = val !== undefined && val !== null ? String(val) : '(null)';
+            } else if (type === 'p') {
+              const addr = Number(val) || 0;
+              formatted = addr === 0 ? '00000000' : '0x' + addr.toString(16).toUpperCase().padStart(8, '0');
+            } else if (type === 'x' || type === 'X') {
+              const num = (Math.trunc(Number(val)) >>> 0);
+              formatted = type === 'X' ? num.toString(16).toUpperCase() : num.toString(16);
+            } else {
+              formatted = String(val ?? '');
+            }
+
+            if (width > formatted.length) {
+              const padChar = flags.includes('0') && !flags.includes('-') ? '0' : ' ';
+              const pad = padChar.repeat(width - formatted.length);
+              formatted = flags.includes('-') ? formatted + pad : pad + formatted;
+            }
+            out += formatted;
+            i += fullSpec.length;
+            continue;
+          }
+        }
+        out += fmt[i];
+        i++;
+      }
+      return out;
+    }
+
+    function compileCProgram(sourceCode) {
+      if (!sourceCode || !sourceCode.trim()) {
+        return { error: '컴파일 오류: 소스 코드가 비어 있습니다.' };
+      }
+
+      let code = sourceCode
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/\/\/.*$/gm, '');
+
+      const defines = {};
+      code = code.replace(/^\s*#define\s+([A-Za-z_]\w*)\s+(.+)$/gm, (_, name, val) => {
+        if (!name.startsWith('_CRT')) {
+          defines[name] = val.trim();
+        }
+        return '';
+      });
+
+      code = code.replace(/^\s*#include\s*[<"][^>"]+[>"]/gm, '');
+
+      for (const [k, v] of Object.entries(defines)) {
+        const re = new RegExp(`\\b${k}\\b`, 'g');
+        code = code.replace(re, `(${v})`);
+      }
+
+      if (!/\bmain\s*\(/.test(code)) {
+        return { error: '링크 오류: main() 함수가 정의되어 있지 않습니다 (교재 p.85 참고).' };
+      }
+
+      const openBraces = (code.match(/\{/g) || []).length;
+      const closeBraces = (code.match(/\}/g) || []).length;
+      if (openBraces !== closeBraces) {
+        return { error: `컴파일 오류: 중괄호 { } 짝이 맞지 않습니다 (여는 괄호 ${openBraces}개, 닫는 괄호 ${closeBraces}개).` };
+      }
+
+      const openParens = (code.match(/\(/g) || []).length;
+      const closeParens = (code.match(/\)/g) || []).length;
+      if (openParens !== closeParens) {
+        return { error: `컴파일 오류: 소괄호 ( ) 짝이 맞지 않습니다 (여는 괄호 ${openParens}개, 닫는 괄호 ${closeParens}개).` };
+      }
+
+      // Remove forward function prototypes (e.g., void printBorder(int size);)
+      code = code.replace(/^\s*(?:void|int|double|float|char|long|short)\s+[A-Za-z_]\w*\s*\([^;{}]*\)\s*;/gm, '');
+
+      return { cleanedCode: code };
+    }
+
+    function createCInterpreterSession(sourceCode, options = {}) {
+      const {
+        initialStdin = '',
+        interactive = false,
+        onStdout = null,
+        onNeedInput = null,
+      } = options;
+
+      let aborted = false;
+      let inputBuffer = initialStdin || '';
+      let waitResolvers = [];
+
+      const emitStdout = (chunk) => {
+        if (onStdout && chunk) onStdout(chunk);
+      };
+
+      const feedInput = (text) => {
+        inputBuffer += text;
+        const resolvers = waitResolvers.splice(0, waitResolvers.length);
+        resolvers.forEach((fn) => fn());
+      };
+
+      const abort = () => {
+        aborted = true;
+        const resolvers = waitResolvers.splice(0, waitResolvers.length);
+        resolvers.forEach((fn) => fn());
+      };
+
+      const waitForMoreInput = () => {
+        if (!interactive) return Promise.resolve(false);
+        if (aborted) return Promise.resolve(false);
+        if (onNeedInput) onNeedInput();
+        return new Promise((resolve) => {
+          waitResolvers.push(() => resolve(!aborted));
+        });
+      };
+
+      const run = async () => {
+        const compiled = compileCProgram(sourceCode);
+        if (compiled.error) {
+          return { stdout: '', stderr: compiled.error, exitCode: 1 };
+        }
+
+        let code = compiled.cleanedCode;
+        let stdout = '';
+        let stepCounter = 0;
+        const MAX_STEPS = 25000;
+
+        const tick = () => {
+          if (aborted) throw new Error('EXEC_ABORTED');
+          stepCounter++;
+          if (stepCounter > MAX_STEPS) {
+            throw new Error('실행 시간 초과(무한 루프 방지): 반복 조건이나 break 문을 확인하세요 (교재 p.108).');
+          }
+        };
+
+        const runtime = {
+          mem: {},
+          nextAddr: 0x1000,
+          scopes: [{}],
+          pushScope() {
+            this.scopes.push({});
+          },
+          popScope() {
+            if (this.scopes.length > 1) this.scopes.pop();
+          },
+          alloc(name, type, initVal) {
+            const addr = this.nextAddr;
+            this.nextAddr += 4;
+            this.mem[addr] = initVal;
+            this.scopes[this.scopes.length - 1][name] = { addr, type, isArray: false };
+            return addr;
+          },
+          allocArray(name, elemType, size, initList = []) {
+            const baseAddr = this.nextAddr;
+            const len = Math.max(1, size);
+            for (let i = 0; i < len; i++) {
+              this.mem[baseAddr + i * 4] = initList[i] !== undefined ? initList[i] : (elemType === 'char' ? '\0' : 0);
+            }
+            this.nextAddr += len * 4;
+            this.scopes[this.scopes.length - 1][name] = { addr: baseAddr, type: elemType, isArray: true, size: len };
+            return baseAddr;
+          },
+          lookup(name) {
+            for (let i = this.scopes.length - 1; i >= 0; i--) {
+              if (Object.prototype.hasOwnProperty.call(this.scopes[i], name)) {
+                return this.scopes[i][name];
+              }
+            }
+            return null;
+          },
+          getVal(name) {
+            const sym = this.lookup(name);
+            if (!sym) throw new Error(`선언되지 않은 식별자 '${name}' 입니다.`);
+            if (sym.isArray) return sym.addr;
+            return this.mem[sym.addr];
+          },
+          setVal(name, val) {
+            const sym = this.lookup(name);
+            if (!sym) throw new Error(`선언되지 않은 변수 '${name}' 에 대입할 수 없습니다.`);
+            let castVal = val;
+            if (sym.type === 'int' || sym.type === 'long' || sym.type === 'short') {
+              castVal = Math.trunc(Number(val));
+            }
+            this.mem[sym.addr] = castVal;
+            return castVal;
+          },
+          addrOf(name) {
+            const sym = this.lookup(name);
+            if (!sym) throw new Error(`주소 연산자(&) 대상 '${name}' 을 찾을 수 없습니다.`);
+            return sym.addr;
+          },
+          deref(addr) {
+            if (!addr || addr === 0) {
+              throw new Error('런타임 오류: NULL 포인터(0x0000)를 역참조(*p)했습니다 (교재 p.210).');
+            }
+            if (!Object.prototype.hasOwnProperty.call(this.mem, addr)) {
+              throw new Error(`런타임 오류: 유효하지 않은 메모리 주소(0x${Number(addr).toString(16)}) 접근입니다.`);
+            }
+            return this.mem[addr];
+          },
+          writeDeref(addr, val) {
+            if (!addr || addr === 0) {
+              throw new Error('런타임 오류: NULL 포인터(0x0000)에 값을 쓸 수 없습니다 (교재 p.210).');
+            }
+            this.mem[addr] = val;
+            return val;
+          },
+          readString(baseAddr) {
+            let s = '';
+            for (let i = 0; i < 512; i++) {
+              const ch = this.mem[baseAddr + i * 4];
+              if (ch === undefined || ch === '\0' || ch === 0) break;
+              s += typeof ch === 'number' ? String.fromCharCode(ch) : String(ch);
+            }
+            return s;
+          },
+          writeString(baseAddr, str) {
+            const text = String(str ?? '');
+            for (let i = 0; i < text.length; i++) {
+              this.mem[baseAddr + i * 4] = text[i];
+            }
+            this.mem[baseAddr + text.length * 4] = '\0';
+          },
+        };
+
+        const stdlib = {
+          printf: (fmt, ...args) => {
+            const piece = formatPrintf(String(fmt ?? ''), args);
+            stdout += piece;
+            emitStdout(piece);
+            return piece.length;
+          },
+          scanf: async (fmt, ...addrs) => {
+            const specs = String(fmt ?? '').match(/%(?:\d+)?(?:l|ll|h)?[diufcs]/g) || [];
+            let count = 0;
+            for (let i = 0; i < specs.length; i++) {
+              const spec = specs[i];
+              const addr = addrs[i];
+              if (addr === undefined) {
+                throw new Error('scanf() 인자가 부족하거나 변수 앞에 주소 연산자(&)가 누락되었습니다 (교재 p.81).');
+              }
+              if (spec.endsWith('c')) {
+                while (inputBuffer.length === 0) {
+                  const ok = await waitForMoreInput();
+                  if (!ok) return count;
+                }
+                const ch = inputBuffer[0];
+                inputBuffer = inputBuffer.slice(1);
+                runtime.writeDeref(addr, ch);
+                count++;
+                continue;
+              }
+              while (true) {
+                inputBuffer = inputBuffer.replace(/^\s+/, '');
+                if (inputBuffer.length > 0) break;
+                const ok = await waitForMoreInput();
+                if (!ok) return count;
+              }
+              const tokenMatch = inputBuffer.match(/^(\S+)/);
+              if (!tokenMatch) break;
+              const token = tokenMatch[1];
+              inputBuffer = inputBuffer.slice(token.length);
+
+              if (spec.endsWith('s')) {
+                runtime.writeString(addr, token);
+              } else if (spec.endsWith('f')) {
+                const num = parseFloat(token);
+                runtime.writeDeref(addr, Number.isNaN(num) ? 0.0 : num);
+              } else {
+                const num = parseInt(token, 10);
+                runtime.writeDeref(addr, Number.isNaN(num) ? 0 : num);
+              }
+              count++;
+            }
+            return count;
+          },
+          fgets: async (bufAddr, maxLen) => {
+            while (inputBuffer.length === 0) {
+              const ok = await waitForMoreInput();
+              if (!ok) return 0;
+            }
+            const nlIdx = inputBuffer.indexOf('\n');
+            let line = '';
+            if (nlIdx === -1) {
+              line = inputBuffer.slice(0, Math.max(0, maxLen - 1));
+              inputBuffer = inputBuffer.slice(line.length);
+            } else {
+              line = inputBuffer.slice(0, Math.min(nlIdx + 1, Math.max(0, maxLen - 1)));
+              inputBuffer = inputBuffer.slice(nlIdx + 1);
+            }
+            runtime.writeString(bufAddr, line);
+            return bufAddr;
+          },
+          strlen: (addr) => runtime.readString(addr).length,
+          strcmp: (a1, a2) => {
+            const s1 = runtime.readString(a1);
+            const s2 = runtime.readString(a2);
+            return s1 === s2 ? 0 : s1 < s2 ? -1 : 1;
+          },
+          strcpy: (dst, src) => {
+            runtime.writeString(dst, runtime.readString(src));
+            return dst;
+          },
+          strcspn: (addr, reject) => {
+            const s = runtime.readString(addr);
+            const idx = s.indexOf(String(reject ?? '\n'));
+            return idx === -1 ? s.length : idx;
+          },
+          sqrt: (x) => Math.sqrt(Number(x)),
+          fabs: (x) => Math.abs(Number(x)),
+          srand: () => {},
+          time: () => Math.floor(Date.now() / 1000),
+          rand: () => Math.floor(Math.random() * 32768),
+        };
+
+        // Parse top-level functions (including main)
+        const funcRegex = /\b(void|int|double|float|char|long|short)\s+([A-Za-z_]\w*)\s*\(([^)]*)\)\s*\{/g;
+        const functions = {};
+        let match;
+        while ((match = funcRegex.exec(code)) !== null) {
+          const retType = match[1];
+          const funcName = match[2];
+          const rawParams = match[3].trim();
+          let depth = 1;
+          let pos = funcRegex.lastIndex;
+          while (pos < code.length && depth > 0) {
+            if (code[pos] === '{') depth++;
+            else if (code[pos] === '}') depth--;
+            pos++;
+          }
+          const body = code.slice(funcRegex.lastIndex, pos - 1);
+          const params = rawParams === '' || rawParams === 'void'
+            ? []
+            : rawParams.split(',').map((p) => {
+                const cleaned = p.trim();
+                const isArr = cleaned.endsWith('[]');
+                const noBracket = cleaned.replace(/\[\]$/, '').trim();
+                const isPtr = noBracket.includes('*');
+                const parts = noBracket.replace(/\*/g, ' ').trim().split(/\s+/);
+                const pName = parts[parts.length - 1];
+                const pType = parts[0];
+                return { name: pName, type: pType, isPtr: isPtr || isArr };
+              });
+          functions[funcName] = { retType, name: funcName, params, body };
+          funcRegex.lastIndex = pos;
+        }
+
+        function splitTopLevel(str, sep) {
+          const out = [];
+          let cur = '';
+          let p = 0, b = 0, c = 0;
+          let inStr = false, inChar = false;
+          for (let i = 0; i < str.length; i++) {
+            const ch = str[i];
+            if (ch === '"' && str[i - 1] !== '\\' && !inChar) inStr = !inStr;
+            else if (ch === "'" && str[i - 1] !== '\\' && !inStr) inChar = !inChar;
+            if (!inStr && !inChar) {
+              if (ch === '(') p++;
+              else if (ch === ')') p--;
+              else if (ch === '[') b++;
+              else if (ch === ']') b--;
+              else if (ch === '{') c++;
+              else if (ch === '}') c--;
+              if (ch === sep && p === 0 && b === 0 && c === 0) {
+                out.push(cur);
+                cur = '';
+                continue;
+              }
+            }
+            cur += ch;
+          }
+          if (cur.trim()) out.push(cur);
+          return out;
+        }
+
+        function splitStatements(block) {
+          const stmts = [];
+          let cur = '';
+          let p = 0, b = 0, c = 0;
+          let inStr = false, inChar = false;
+          for (let i = 0; i < block.length; i++) {
+            const ch = block[i];
+            if (ch === '"' && block[i - 1] !== '\\' && !inChar) inStr = !inStr;
+            else if (ch === "'" && block[i - 1] !== '\\' && !inStr) inChar = !inChar;
+            cur += ch;
+            if (!inStr && !inChar) {
+              if (ch === '(') p++;
+              else if (ch === ')') p--;
+              else if (ch === '[') b++;
+              else if (ch === ']') b--;
+              else if (ch === '{') c++;
+              else if (ch === '}') {
+                c--;
+                if (c === 0 && p === 0 && b === 0) {
+                  // Check if followed by else
+                  const rest = block.slice(i + 1);
+                  if (/^\s*else\b/.test(rest)) continue;
+                  stmts.push(cur.trim());
+                  cur = '';
+                }
+              } else if (ch === ';' && c === 0 && p === 0 && b === 0) {
+                // Keep single-line if(...) stmt; else stmt; together if followed by else
+                const trimmed = cur.trim();
+                if (/^if\s*\(/.test(trimmed)) {
+                  const rest = block.slice(i + 1);
+                  if (/^\s*else\b/.test(rest)) continue;
+                }
+                stmts.push(trimmed);
+                cur = '';
+              }
+            }
+          }
+          if (cur.trim()) stmts.push(cur.trim());
+          return stmts;
+        }
+
+        // Safely unquote C string literal into JS string
+        function unquoteCString(lit) {
+          const inner = lit.slice(1, -1);
+          return inner
+            .replace(/\\n/g, '\n')
+            .replace(/\\t/g, '\t')
+            .replace(/\\0/g, '\0')
+            .replace(/\\"/g, '"')
+            .replace(/\\\\/g, '\\');
+        }
+
+        // Convert char literal ('a', '\n', etc.) to ASCII number
+        function charLiteralToCode(lit) {
+          const inner = lit.slice(1, -1);
+          if (inner === '\\n') return 10;
+          if (inner === '\\t') return 9;
+          if (inner === '\\0') return 0;
+          if (inner === '\\\'') return 39;
+          if (inner === '\\\\') return 92;
+          return inner.charCodeAt(0) || 0;
+        }
+
+        // Call stdlib or user-defined C function cleanly without string-rewriting '__call'
+        async function callCFunction(fnName, args) {
+          const mappedArgs = args.map((a) => {
+            if (typeof a === 'string' && ['strlen', 'strcmp', 'strcpy', 'strcspn'].includes(fnName)) {
+              const tmpAddr = runtime.nextAddr;
+              runtime.nextAddr += (a.length + 2) * 4;
+              runtime.writeString(tmpAddr, a);
+              return tmpAddr;
+            }
+            return a;
+          });
+          if (Object.prototype.hasOwnProperty.call(stdlib, fnName)) {
+            return await stdlib[fnName](...mappedArgs);
+          }
+          if (Object.prototype.hasOwnProperty.call(functions, fnName)) {
+            return await invokeFunction(functions[fnName], mappedArgs);
+          }
+          throw new Error(`정의되지 않은 함수 '${fnName}()' 호출입니다.`);
+        }
+
+        // Strip outer matching parentheses if they wrap the entire expression
+        function stripOuterParens(s) {
+          let cur = s.trim();
+          while (cur.startsWith('(') && cur.endsWith(')')) {
+            let depth = 0;
+            let wrapsAll = true;
+            for (let i = 0; i < cur.length; i++) {
+              if (cur[i] === '(') depth++;
+              else if (cur[i] === ')') {
+                depth--;
+                if (depth === 0 && i < cur.length - 1) {
+                  wrapsAll = false;
+                  break;
+                }
+              }
+            }
+            if (!wrapsAll || depth !== 0) break;
+            cur = cur.slice(1, -1).trim();
+          }
+          return cur;
+        }
+
+        // Find top-level binary operator with lowest precedence (right-to-left or left-to-right)
+        function findTopLevelOp(expr, ops, rightToLeft = false) {
+          let p = 0, b = 0, c = 0;
+          let inStr = false, inChar = false;
+          const indices = [];
+          for (let i = 0; i < expr.length; i++) {
+            const ch = expr[i];
+            if (ch === '"' && expr[i - 1] !== '\\' && !inChar) inStr = !inStr;
+            else if (ch === "'" && expr[i - 1] !== '\\' && !inStr) inChar = !inChar;
+            if (!inStr && !inChar) {
+              if (ch === '(') p++;
+              else if (ch === ')') p--;
+              else if (ch === '[') b++;
+              else if (ch === ']') b--;
+              else if (ch === '{') c++;
+              else if (ch === '}') c--;
+              if (p === 0 && b === 0 && c === 0) {
+                for (const op of ops) {
+                  if (expr.slice(i, i + op.length) === op) {
+                    // Avoid matching single '=' inside '==', '!=', '<=', '>='
+                    if (op === '=') {
+                      const prev = expr[i - 1];
+                      const next = expr[i + 1];
+                      if (prev === '=' || prev === '!' || prev === '<' || prev === '>' || next === '=') {
+                        continue;
+                      }
+                    }
+                    // Avoid matching single '&' inside '&&' or single '|' inside '||'
+                    if (op === '&' && (expr[i + 1] === '&' || expr[i - 1] === '&')) continue;
+                    if (op === '|' && (expr[i + 1] === '|' || expr[i - 1] === '|')) continue;
+                    indices.push({ idx: i, op });
+                    break;
+                  }
+                }
+              }
+            }
+          }
+          if (indices.length === 0) return null;
+          return rightToLeft ? indices[indices.length - 1] : indices[0];
+        }
+
+        // Direct recursive C expression evaluator (no '__call' identifier rewriting)
+        async function evalExpr(rawExpr) {
+          const expr = stripOuterParens(String(rawExpr ?? ''));
+          if (!expr) return 0;
+
+          // 1. Top-level variable assignment / compound assignment: x = ..., x += ...
+          const assignMatch = expr.match(/^([A-Za-z_]\w*)\s*(\+=|-=|\*=|\/=|%=|=)\s*([\s\S]+)$/);
+          if (assignMatch && !expr.includes('==')) {
+            const lhs = assignMatch[1];
+            const op = assignMatch[2];
+            const rhsVal = await evalExpr(assignMatch[3]);
+            if (op === '=') {
+              return runtime.setVal(lhs, rhsVal);
+            }
+            const cur = Number(runtime.getVal(lhs));
+            const v = Number(rhsVal);
+            let next = rhsVal;
+            if (op === '+=') next = cur + v;
+            else if (op === '-=') next = cur - v;
+            else if (op === '*=') next = cur * v;
+            else if (op === '/=') next = Math.trunc(cur / v);
+            else if (op === '%=') next = cur % v;
+            return runtime.setVal(lhs, next);
+          }
+
+          // 2. Pointer dereference assignment at top-level: *p = val
+          if (/^\*\s*[A-Za-z_]\w*\s*=/.test(expr) && !expr.includes('==')) {
+            const m = expr.match(/^\*\s*([A-Za-z_]\w*)\s*=\s*([\s\S]+)$/);
+            if (m) {
+              const addr = runtime.getVal(m[1]);
+              const rhsVal = await evalExpr(m[2]);
+              return runtime.writeDeref(addr, rhsVal);
+            }
+          }
+
+          // 3. Array element assignment at top-level: arr[i] = val or arr[i] += val
+          const arrAssignMatch = expr.match(/^([A-Za-z_]\w*)\s*\[((?:[^[\]]|\[[^\]]*\])+)\]\s*(\+=|-=|\*=|\/=|%=|=)\s*([\s\S]+)$/);
+          if (arrAssignMatch && !expr.slice(0, arrAssignMatch.index).includes('==')) {
+            const arrName = arrAssignMatch[1];
+            const idxVal = Math.trunc(Number(await evalExpr(arrAssignMatch[2])));
+            const op = arrAssignMatch[3];
+            const rhsVal = await evalExpr(arrAssignMatch[4]);
+            const sym = runtime.lookup(arrName);
+            if (!sym) throw new Error(`배열 '${arrName}' 을 찾을 수 없습니다.`);
+            const base = sym.isArray ? sym.addr : runtime.mem[sym.addr];
+            if (sym.isArray && (idxVal < 0 || idxVal >= sym.size)) {
+              throw new Error(`런타임 경고: 배열 '${arrName}[${idxVal}]' 인덱스 범위(0~${sym.size - 1})를 초과했습니다 (교재 p.131).`);
+            }
+            const targetAddr = base + idxVal * 4;
+            if (op === '=') {
+              runtime.mem[targetAddr] = rhsVal;
+              return rhsVal;
+            }
+            const cur = Number(runtime.mem[targetAddr] ?? 0);
+            const v = Number(rhsVal);
+            let next = rhsVal;
+            if (op === '+=') next = cur + v;
+            else if (op === '-=') next = cur - v;
+            else if (op === '*=') next = cur * v;
+            else if (op === '/=') next = Math.trunc(cur / v);
+            else if (op === '%=') next = cur % v;
+            runtime.mem[targetAddr] = next;
+            return next;
+          }
+
+          // 4. Precedence climbing from lowest to highest
+          const precLevels = [
+            ['||'],
+            ['&&'],
+            ['==', '!='],
+            ['<=', '>=', '<', '>'],
+            ['+', '-'],
+            ['*', '/', '%'],
+          ];
+
+          for (const ops of precLevels) {
+            const found = findTopLevelOp(expr, ops, false);
+            if (found && found.idx > 0) {
+              const leftStr = expr.slice(0, found.idx).trim();
+              const rightStr = expr.slice(found.idx + found.op.length).trim();
+              if (leftStr && rightStr) {
+                const lVal = await evalExpr(leftStr);
+                const rVal = await evalExpr(rightStr);
+                switch (found.op) {
+                  case '||': return (Number(lVal) !== 0 || Number(rVal) !== 0) ? 1 : 0;
+                  case '&&': return (Number(lVal) !== 0 && Number(rVal) !== 0) ? 1 : 0;
+                  case '==': return lVal === rVal ? 1 : 0;
+                  case '!=': return lVal !== rVal ? 1 : 0;
+                  case '<=': return Number(lVal) <= Number(rVal) ? 1 : 0;
+                  case '>=': return Number(lVal) >= Number(rVal) ? 1 : 0;
+                  case '<': return Number(lVal) < Number(rVal) ? 1 : 0;
+                  case '>': return Number(lVal) > Number(rVal) ? 1 : 0;
+                  case '+':
+                    if (typeof lVal === 'string' || typeof rVal === 'string') {
+                      return String(lVal) + String(rVal);
+                    }
+                    return Number(lVal) + Number(rVal);
+                  case '-': return Number(lVal) - Number(rVal);
+                  case '*': return Number(lVal) * Number(rVal);
+                  case '/':
+                    if (Number(rVal) === 0) throw new Error('런타임 오류: 0으로 나눌 수 없습니다.');
+                    return Math.trunc(Number(lVal) / Number(rVal));
+                  case '%':
+                    if (Number(rVal) === 0) throw new Error('런타임 오류: 0으로 나눈 나머지를 구할 수 없습니다.');
+                    return Math.trunc(Number(lVal)) % Math.trunc(Number(rVal));
+                }
+              }
+            }
+          }
+
+          // 5. Unary prefix operators: !, ~, unary +, unary -, ++x, --x, &var, &arr[i], *ptr, (cast)expr
+          if (expr.startsWith('!')) {
+            const v = await evalExpr(expr.slice(1));
+            return Number(v) === 0 ? 1 : 0;
+          }
+          if (expr.startsWith('++')) {
+            const name = expr.slice(2).trim();
+            const next = Number(runtime.getVal(name)) + 1;
+            return runtime.setVal(name, next);
+          }
+          if (expr.startsWith('--')) {
+            const name = expr.slice(2).trim();
+            const next = Number(runtime.getVal(name)) - 1;
+            return runtime.setVal(name, next);
+          }
+          if (expr.startsWith('+') && !expr.startsWith('++')) {
+            return Number(await evalExpr(expr.slice(1)));
+          }
+          if (expr.startsWith('-') && !expr.startsWith('--')) {
+            return -Number(await evalExpr(expr.slice(1)));
+          }
+          if (expr.startsWith('&')) {
+            const target = expr.slice(1).trim();
+            const arrRef = target.match(/^([A-Za-z_]\w*)\s*\[((?:[^[\]]|\[[^\]]*\])+)\]$/);
+            if (arrRef) {
+              const sym = runtime.lookup(arrRef[1]);
+              if (!sym) throw new Error(`배열 '${arrRef[1]}' 을 찾을 수 없습니다.`);
+              const idxVal = Math.trunc(Number(await evalExpr(arrRef[2])));
+              return sym.addr + idxVal * 4;
+            }
+            const varMatch = target.match(/^\(?([A-Za-z_]\w*)\)?$/);
+            if (varMatch) {
+              return runtime.addrOf(varMatch[1]);
+            }
+          }
+          if (expr.startsWith('*')) {
+            const addr = await evalExpr(expr.slice(1));
+            return runtime.deref(addr);
+          }
+
+          // C type casts: (double)x, (int)x, (unsigned int)x
+          const castMatch = expr.match(/^\(\s*(?:unsigned\s+)?(int|long|short|char|double|float)\s*\)\s*([\s\S]+)$/);
+          if (castMatch) {
+            const castType = castMatch[1];
+            const innerVal = await evalExpr(castMatch[2]);
+            if (castType === 'double' || castType === 'float') return Number(innerVal);
+            return Math.trunc(Number(innerVal));
+          }
+
+          // 6. Postfix ++ / -- : x++, x--
+          const postIncMatch = expr.match(/^([A-Za-z_]\w*)\s*(\+\+|--)$/);
+          if (postIncMatch) {
+            const name = postIncMatch[1];
+            const cur = Number(runtime.getVal(name));
+            const delta = postIncMatch[2] === '++' ? 1 : -1;
+            runtime.setVal(name, cur + delta);
+            return cur;
+          }
+
+          // 7. Function call: fnName(arg1, arg2, ...)
+          const fnCallMatch = expr.match(/^([A-Za-z_]\w*)\s*\(([\s\S]*)\)$/);
+          if (fnCallMatch) {
+            // Confirm closing paren matches index expr.length - 1
+            let pDepth = 0;
+            let matchesWhole = true;
+            for (let i = fnCallMatch[1].length; i < expr.length; i++) {
+              if (expr[i] === '(') pDepth++;
+              else if (expr[i] === ')') {
+                pDepth--;
+                if (pDepth === 0 && i < expr.length - 1) {
+                  matchesWhole = false;
+                  break;
+                }
+              }
+            }
+            if (matchesWhole && pDepth === 0) {
+              const fnName = fnCallMatch[1];
+              const argStr = fnCallMatch[2].trim();
+              const argTokens = argStr ? splitTopLevel(argStr, ',') : [];
+              const argVals = [];
+              for (const tok of argTokens) {
+                argVals.push(await evalExpr(tok));
+              }
+              return await callCFunction(fnName, argVals);
+            }
+          }
+
+          // 8. Array element read: arr[idx]
+          const arrReadMatch = expr.match(/^([A-Za-z_]\w*)\s*\[((?:[^[\]]|\[[^\]]*\])+)\]$/);
+          if (arrReadMatch) {
+            const arrName = arrReadMatch[1];
+            const idxVal = Math.trunc(Number(await evalExpr(arrReadMatch[2])));
+            const sym = runtime.lookup(arrName);
+            if (!sym) throw new Error(`배열 '${arrName}' 을 찾을 수 없습니다.`);
+            const base = sym.isArray ? sym.addr : runtime.mem[sym.addr];
+            if (sym.isArray && (idxVal < 0 || idxVal >= sym.size)) {
+              throw new Error(`런타임 경고: 배열 '${arrName}[${idxVal}]' 인덱스 범위(0~${sym.size - 1})를 초과했습니다 (교재 p.131).`);
+            }
+            return runtime.mem[base + idxVal * 4];
+          }
+
+          // 9. Literals & identifiers
+          if (/^"(?:\\.|[^"\\])*"$/.test(expr)) {
+            return unquoteCString(expr);
+          }
+          if (/^'(?:\\.|[^'\\])'$/.test(expr)) {
+            return charLiteralToCode(expr);
+          }
+          if (/^0[xX][0-9a-fA-F]+$/.test(expr)) {
+            return parseInt(expr, 16);
+          }
+          if (/^\d+(?:\.\d+)?[fFlLuU]*$/.test(expr)) {
+            const cleanNum = expr.replace(/[fFlLuU]+$/, '');
+            return cleanNum.includes('.') ? parseFloat(cleanNum) : parseInt(cleanNum, 10);
+          }
+          if (expr === 'NULL') {
+            return 0;
+          }
+          if (/^[A-Za-z_]\w*$/.test(expr)) {
+            return runtime.getVal(expr);
+          }
+
+          throw new Error(`지원되지 않거나 잘못된 C 수식입니다: ${expr}`);
+        }
+
+        async function execBlock(blockCode) {
+          const stmts = splitStatements(blockCode);
+          for (const rawStmt of stmts) {
+            tick();
+            const stmt = rawStmt.trim();
+            if (!stmt || stmt === ';') continue;
+
+            // return statement
+            if (/^return\b/.test(stmt)) {
+              const expr = stmt.replace(/^return\b/, '').replace(/;$/, '').trim();
+              const val = expr ? await evalExpr(expr) : undefined;
+              return { type: 'return', value: val };
+            }
+
+            // break statement
+            if (/^break\s*;?$/.test(stmt)) {
+              return { type: 'break' };
+            }
+
+            // continue statement
+            if (/^continue\s*;?$/.test(stmt)) {
+              return { type: 'continue' };
+            }
+
+            // Variable / Array declaration: int a = 1, b[5] = {1,2};
+            const declMatch = stmt.match(/^(?:unsigned\s+)?(int|double|float|char|long|short)\s+(.+);$/);
+            if (declMatch) {
+              const baseType = declMatch[1];
+              const items = splitTopLevel(declMatch[2], ',');
+              for (const item of items) {
+                const trimmedItem = item.trim();
+                const arrMatch = trimmedItem.match(/^([A-Za-z_]\w*)\s*\[([^\]]*)\]\s*(?:=\s*(.+))?$/);
+                if (arrMatch) {
+                  const arrName = arrMatch[1];
+                  const rawSize = arrMatch[2].trim();
+                  const initPart = arrMatch[3] ? arrMatch[3].trim() : null;
+                  if (initPart && initPart.startsWith('"')) {
+                    const strVal = JSON.parse(initPart);
+                    const sz = rawSize ? Math.trunc(Number(await evalExpr(rawSize))) : strVal.length + 1;
+                    const addr = runtime.allocArray(arrName, 'char', sz, []);
+                    runtime.writeString(addr, strVal);
+                  } else if (initPart && initPart.startsWith('{')) {
+                    const inner = initPart.slice(1, -1);
+                    const elems = splitTopLevel(inner, ',');
+                    const evaluated = [];
+                    for (const el of elems) {
+                      evaluated.push(await evalExpr(el));
+                    }
+                    const sz = rawSize ? Math.trunc(Number(await evalExpr(rawSize))) : evaluated.length;
+                    runtime.allocArray(arrName, baseType, sz, evaluated);
+                  } else {
+                    const sz = rawSize ? Math.trunc(Number(await evalExpr(rawSize))) : 1;
+                    runtime.allocArray(arrName, baseType, sz, []);
+                  }
+                } else {
+                  const cleanVar = trimmedItem.replace(/^\*\s*/, '');
+                  const eqIdx = cleanVar.indexOf('=');
+                  if (eqIdx === -1) {
+                    runtime.alloc(cleanVar.trim(), baseType, 0);
+                  } else {
+                    const vName = cleanVar.slice(0, eqIdx).trim();
+                    const vExpr = cleanVar.slice(eqIdx + 1).trim();
+                    const vVal = await evalExpr(vExpr);
+                    runtime.alloc(vName, baseType, vVal);
+                  }
+                }
+              }
+              continue;
+            }
+
+            // if / else if / else statement
+            if (/^if\s*\(/.test(stmt)) {
+              const res = await execIfChain(stmt);
+              if (res && res.type !== 'none') return res;
+              continue;
+            }
+
+            // while loop
+            if (/^while\s*\(/.test(stmt)) {
+              const condStart = stmt.indexOf('(');
+              let p = 1, pos = condStart + 1;
+              while (pos < stmt.length && p > 0) {
+                if (stmt[pos] === '(') p++;
+                else if (stmt[pos] === ')') p--;
+                pos++;
+              }
+              const condExpr = stmt.slice(condStart + 1, pos - 1);
+              let bodyPart = stmt.slice(pos).trim();
+              if (bodyPart.startsWith('{') && bodyPart.endsWith('}')) {
+                bodyPart = bodyPart.slice(1, -1);
+              }
+              while (Number(await evalExpr(condExpr)) !== 0) {
+                tick();
+                runtime.pushScope();
+                const sig = await execBlock(bodyPart);
+                runtime.popScope();
+                if (sig && sig.type === 'break') break;
+                if (sig && sig.type === 'return') return sig;
+              }
+              continue;
+            }
+
+            // for loop
+            if (/^for\s*\(/.test(stmt)) {
+              const condStart = stmt.indexOf('(');
+              let p = 1, pos = condStart + 1;
+              while (pos < stmt.length && p > 0) {
+                if (stmt[pos] === '(') p++;
+                else if (stmt[pos] === ')') p--;
+                pos++;
+              }
+              const header = stmt.slice(condStart + 1, pos - 1);
+              const parts = splitTopLevel(header, ';');
+              const initPart = (parts[0] || '').trim();
+              const condPart = (parts[1] || '1').trim();
+              const stepPart = (parts[2] || '').trim();
+              let bodyPart = stmt.slice(pos).trim();
+              if (bodyPart.startsWith('{') && bodyPart.endsWith('}')) {
+                bodyPart = bodyPart.slice(1, -1);
+              }
+
+              runtime.pushScope();
+              if (initPart) {
+                await execBlock(initPart.endsWith(';') ? initPart : initPart + ';');
+              }
+              while (Number(await evalExpr(condPart)) !== 0) {
+                tick();
+                runtime.pushScope();
+                const sig = await execBlock(bodyPart);
+                runtime.popScope();
+                if (sig && sig.type === 'break') break;
+                if (sig && sig.type === 'return') {
+                  runtime.popScope();
+                  return sig;
+                }
+                if (stepPart) {
+                  await evalExpr(stepPart);
+                }
+              }
+              runtime.popScope();
+              continue;
+            }
+
+            // switch statement
+            if (/^switch\s*\(/.test(stmt)) {
+              const condStart = stmt.indexOf('(');
+              let p = 1, pos = condStart + 1;
+              while (pos < stmt.length && p > 0) {
+                if (stmt[pos] === '(') p++;
+                else if (stmt[pos] === ')') p--;
+                pos++;
+              }
+              const switchVal = await evalExpr(stmt.slice(condStart + 1, pos - 1));
+              let bodyPart = stmt.slice(pos).trim();
+              if (bodyPart.startsWith('{') && bodyPart.endsWith('}')) {
+                bodyPart = bodyPart.slice(1, -1);
+              }
+              const sections = bodyPart.split(/(?=\bcase\b|\bdefault\s*:)/g).map((s) => s.trim()).filter(Boolean);
+              let matched = false;
+              for (const sec of sections) {
+                if (sec.startsWith('case ')) {
+                  const colonIdx = sec.indexOf(':');
+                  const caseExpr = sec.slice(5, colonIdx).trim();
+                  const caseVal = await evalExpr(caseExpr);
+                  if (matched || caseVal === switchVal) {
+                    matched = true;
+                    const sig = await execBlock(sec.slice(colonIdx + 1));
+                    if (sig && sig.type === 'break') break;
+                    if (sig && sig.type === 'return') return sig;
+                  }
+                } else if (sec.startsWith('default')) {
+                  const colonIdx = sec.indexOf(':');
+                  const sig = await execBlock(sec.slice(colonIdx + 1));
+                  if (sig && sig.type === 'break') break;
+                  if (sig && sig.type === 'return') return sig;
+                }
+              }
+              continue;
+            }
+
+            // Expression statement
+            const expr = stmt.replace(/;$/, '').trim();
+            await evalExpr(expr);
+          }
+          return { type: 'none' };
+        }
+
+        async function execIfChain(chainStmt) {
+          let rest = chainStmt.trim();
+          while (rest.length > 0) {
+            if (/^if\s*\(/.test(rest)) {
+              const condStart = rest.indexOf('(');
+              let p = 1, pos = condStart + 1;
+              while (pos < rest.length && p > 0) {
+                if (rest[pos] === '(') p++;
+                else if (rest[pos] === ')') p--;
+                pos++;
+              }
+              const condExpr = rest.slice(condStart + 1, pos - 1);
+              let afterCond = rest.slice(pos).trim();
+              let branchBody = '';
+              if (afterCond.startsWith('{')) {
+                let bDepth = 1, bPos = 1;
+                while (bPos < afterCond.length && bDepth > 0) {
+                  if (afterCond[bPos] === '{') bDepth++;
+                  else if (afterCond[bPos] === '}') bDepth--;
+                  bPos++;
+                }
+                branchBody = afterCond.slice(1, bPos - 1);
+                rest = afterCond.slice(bPos).trim();
+              } else {
+                const semiIdx = afterCond.indexOf(';');
+                branchBody = semiIdx === -1 ? afterCond : afterCond.slice(0, semiIdx + 1);
+                rest = semiIdx === -1 ? '' : afterCond.slice(semiIdx + 1).trim();
+              }
+
+              if (Number(await evalExpr(condExpr)) !== 0) {
+                runtime.pushScope();
+                const sig = await execBlock(branchBody);
+                runtime.popScope();
+                return sig;
+              }
+              if (/^else\b/.test(rest)) {
+                rest = rest.replace(/^else\b/, '').trim();
+                continue;
+              }
+              break;
+            } else {
+              // Final else branch
+              let branchBody = rest;
+              if (branchBody.startsWith('{') && branchBody.endsWith('}')) {
+                branchBody = branchBody.slice(1, -1);
+              }
+              runtime.pushScope();
+              const sig = await execBlock(branchBody);
+              runtime.popScope();
+              return sig;
+            }
+          }
+          return { type: 'none' };
+        }
+
+        async function invokeFunction(fnDef, args) {
+          runtime.pushScope();
+          for (let i = 0; i < fnDef.params.length; i++) {
+            const p = fnDef.params[i];
+            runtime.alloc(p.name, p.type, args[i] !== undefined ? args[i] : 0);
+          }
+          const sig = await execBlock(fnDef.body);
+          runtime.popScope();
+          return sig && sig.type === 'return' ? sig.value : 0;
+        }
+
+        try {
+          const exitCode = await invokeFunction(functions.main, []);
+          return {
+            stdout,
+            stderr: '',
+            exitCode: typeof exitCode === 'number' ? exitCode : 0,
+          };
+        } catch (err) {
+          if (err && err.message === 'EXEC_ABORTED') {
+            return { stdout, stderr: '사용자에 의해 실행이 중지되었습니다.', exitCode: 130 };
+          }
+          return {
+            stdout,
+            stderr: err?.message || '실행 중 오류가 발생했습니다.',
+            exitCode: 1,
+          };
+        }
+      };
+
+      return { run, feedInput, abort };
+    }
+
+    async function executeCProgram(sourceCode, stdinText = '') {
+      const session = createCInterpreterSession(sourceCode, {
+        initialStdin: stdinText,
+        interactive: false,
+      });
+      return await session.run();
+    }
+
+    /* =========================================================================
+       6. VISUALIZATION SUITE (All 10 Interactive Simulators from Curriculum)
+       ========================================================================= */
+    const VIZ_LIST = [
+      { id: 'exec_flow', title: '1. C 프로그램 실행 과정', pageRef: 'p.2, p.10~12' },
+      { id: 'var_memory', title: '2. 변수와 메모리', pageRef: 'p.49~51, p.57~60' },
+      { id: 'dtype_cast', title: '3. 자료형과 형변환', pageRef: 'p.52~53, p.67~72' },
+      { id: 'op_eval', title: '4. 수식과 연산 과정', pageRef: 'p.62~65, p.73~74' },
+      { id: 'cond_branch', title: '5. 조건문 실행 흐름', pageRef: 'p.86, p.91~100' },
+      { id: 'loop_trace', title: '6. 반복문 실행 흐름', pageRef: 'p.104, p.108~114' },
+      { id: 'array_mem', title: '7. 배열과 메모리 구조', pageRef: 'p.125~131' },
+      { id: 'func_call', title: '8. 함수 호출 (값 vs 참조)', pageRef: 'p.170, p.219~222' },
+      { id: 'ptr_addr', title: '9. 포인터와 메모리 주소', pageRef: 'p.201~215' },
+      { id: 'ptr_array', title: '10. 포인터와 배열 관계', pageRef: 'p.223~227' },
+    ];
+
+    function VisualizationSuite({ selectedVizId, onSelectViz }) {
+      // Simulator 1: Execution flow
+      const [execStep, setExecStep] = useState(0);
+      const execStages = [
+        { name: '1단계: 소스 코드 작성 (main.c)', detail: '사람이 읽을 수 있는 C 고급언어로 명령을 작성합니다(p.8, p.20).' },
+        { name: '2단계: 전처리 & 컴파일 (Compiler)', detail: '#include <stdio.h> 처리 후 C 코드를 CPU 명령어(기계어)로 번역합니다(p.2, p.11).' },
+        { name: '3단계: 실행 파일 생성 (.exe)', detail: '목적 코드가 연결되어 실행 가능한 바이너리 프로그램이 생성됩니다(p.46~47).' },
+        { name: '4단계: CPU 실행 및 콘솔 출력', detail: 'CPU가 main()의 명령을 순차 실행하고 printf 결과를 화면에 출력합니다(p.12).' },
+      ];
+
+      // Simulator 2: Variable & memory
+      const [varVal, setVarVal] = useState(100);
+      const [varHistory, setVarHistory] = useState(['int score = 100; (초기화)']);
+
+      // Simulator 3: Data types & cast
+      const [rawDouble, setRawDouble] = useState(3.141592);
+
+      // Simulator 4: Operator evaluation
+      const [opX, setOpX] = useState(7);
+      const [opY, setOpY] = useState(2);
+
+      // Simulator 5: Conditional branch
+      const [condScore, setCondScore] = useState(85);
+
+      // Simulator 6: Loop trace
+      const [loopN, setLoopN] = useState(5);
+      const [loopStep, setLoopStep] = useState(0);
+      const loopSnapshots = useMemo(() => {
+        const list = [{ label: '초기화: i = 1, sum = 0', i: 1, sum: 0, active: true }];
+        let s = 0;
+        for (let k = 1; k <= loopN; k++) {
+          s += k;
+          list.push({ label: `반복 ${k}회: sum += ${k} → sum=${s}, 다음 i=${k + 1}`, i: k + 1, sum: s, active: k < loopN });
+        }
+        list.push({ label: `조건 i <= ${loopN} 거짓 → 루프 종료 (최종 sum = ${s})`, i: loopN + 1, sum: s, active: false });
+        return list;
+      }, [loopN]);
+
+      // Simulator 7: Array & bounds
+      const [arrValues, setArrValues] = useState([80, 90, 75, 85, 100]);
+      const [arrIdx, setArrIdx] = useState(2);
+
+      // Simulator 8: Function call (Call by Value vs Call by Reference)
+      const [callMode, setCallMode] = useState('reference');
+      const [callStep, setCallStep] = useState(0);
+
+      // Simulator 9: Pointer & memory address
+      const [ptrTargetVal, setPtrTargetVal] = useState(10);
+      const [ptrLinked, setPtrLinked] = useState(true);
+
+      // Simulator 10: Pointer & array relation
+      const [ptrOffset, setPtrOffset] = useState(0);
+      const baseArr = [10, 20, 30, 40, 50];
+
+      const curMeta = VIZ_LIST.find((v) => v.id === selectedVizId) || VIZ_LIST[0];
+
+      return (
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-5">
+          <div>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h1 className="text-lg sm:text-xl font-extrabold text-navy-800">
+                인터랙티브 C 개념 시각화 (10종 시뮬레이터)
+              </h1>
+              <span className="text-xs font-mono px-2.5 py-1 rounded-full bg-mobility-100 text-mobility-600 font-bold">
+                교재 출처: {curMeta.pageRef}
+              </span>
+            </div>
+            <div className="flex gap-1.5 overflow-x-auto py-2 mt-2">
+              {VIZ_LIST.map((v) => (
+                <button
+                  key={v.id}
+                  onClick={() => onSelectViz(v.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
+                    selectedVizId === v.id
+                      ? 'bg-navy-800 text-white shadow'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  {v.title}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 1. C Program Execution Flow */}
+          {selectedVizId === 'exec_flow' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {execStages.map((st, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setExecStep(idx)}
+                    className={`p-3.5 rounded-xl border text-left transition ${
+                      execStep === idx ? 'bg-mobility-100 border-mobility-600' : 'bg-slate-50 border-slate-200'
+                    }`}
+                  >
+                    <div className="text-xs font-extrabold text-navy-800">{st.name}</div>
+                    <p className="text-xs text-slate-600 mt-1">{st.detail}</p>
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setExecStep((s) => (s + 1) % execStages.length)}
+                  className="px-4 py-2 rounded-xl bg-mobility-600 text-white text-xs font-bold"
+                >
+                  다음 단계 실행 →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 2. Variable and Memory */}
+          {selectedVizId === 'var_memory' && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+                <div className="p-4 rounded-2xl bg-white border-2 border-mobility-600 shadow-sm min-w-[190px]">
+                  <div className="text-[11px] font-mono text-slate-500">주소: 0x1000 · 크기: 4 Bytes</div>
+                  <div className="text-xs font-bold text-mobility-600 mt-0.5">int score</div>
+                  <div className="text-3xl font-mono font-extrabold text-navy-800 mt-1">{varVal}</div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { label: 'score = 200;', fn: () => { setVarVal(200); setVarHistory((h) => ['score = 200; (덮어쓰기)', ...h].slice(0, 5)); } },
+                    { label: 'score += 50;', fn: () => { setVarVal((v) => { const n = v + 50; setVarHistory((h) => [`score += 50; → ${n}`, ...h].slice(0, 5)); return n; }); } },
+                    { label: '초기화 (100)', fn: () => { setVarVal(100); setVarHistory(['int score = 100; (초기화)']); } },
+                  ].map((act) => (
+                    <button key={act.label} onClick={act.fn} className="px-3 py-2 rounded-xl bg-navy-800 text-white font-mono text-xs font-bold">
+                      {act.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="text-xs font-mono text-slate-600 space-y-1">
+                <div className="font-bold text-slate-800">메모리 값 변경 이력:</div>
+                {varHistory.map((item, i) => <div key={i}>• {item}</div>)}
+              </div>
+            </div>
+          )}
+
+          {/* 3. Data Types & Type Casting */}
+          {selectedVizId === 'dtype_cast' && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <label className="text-xs font-bold text-slate-700">실수 입력값 (double):</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={rawDouble}
+                  onChange={(e) => setRawDouble(parseFloat(e.target.value) || 0)}
+                  className="px-3 py-1.5 rounded-xl border border-slate-300 font-mono text-xs w-36"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="font-bold text-navy-800">double (8 Bytes)</div>
+                  <div className="text-lg font-extrabold text-mobility-600 mt-1">{rawDouble.toFixed(6)}</div>
+                  <div className="text-slate-500 mt-1">정밀 소수부 유지(p.52)</div>
+                </div>
+                <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200">
+                  <div className="font-bold text-amber-900">int i = d; (내림 형변환)</div>
+                  <div className="text-lg font-extrabold text-amber-800 mt-1">{Math.trunc(rawDouble)}</div>
+                  <div className="text-amber-700 mt-1">소수점 이하 자동 절삭(p.68)</div>
+                </div>
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="font-bold text-navy-800">char (1 Byte)</div>
+                  <div className="text-lg font-extrabold text-emerald-700 mt-1">{Math.trunc(rawDouble) & 0xff}</div>
+                  <div className="text-slate-500 mt-1">1바이트 정수/문자 저장(p.53)</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 4. Operator Evaluation */}
+          {selectedVizId === 'op_eval' && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-4 items-center text-xs">
+                <label className="font-bold">x = <input type="number" value={opX} onChange={(e) => setOpX(parseInt(e.target.value, 10) || 0)} className="ml-1 px-2.5 py-1 rounded-lg border border-slate-300 font-mono w-20" /></label>
+                <label className="font-bold">y = <input type="number" value={opY} onChange={(e) => setOpY(parseInt(e.target.value, 10) || 1)} className="ml-1 px-2.5 py-1 rounded-lg border border-slate-300 font-mono w-20" /></label>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 font-mono text-xs">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="text-slate-500">정수 나눗셈 x / y</div>
+                  <div className="text-base font-extrabold text-navy-800 mt-1">{opY !== 0 ? Math.trunc(opX / opY) : 'ERR'}</div>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="text-slate-500">나머지 x % y</div>
+                  <div className="text-base font-extrabold text-navy-800 mt-1">{opY !== 0 ? opX % opY : 'ERR'}</div>
+                </div>
+                <div className="p-3 rounded-xl bg-mobility-100/60 border border-mobility-500/30">
+                  <div className="text-mobility-600">(double)x / y</div>
+                  <div className="text-base font-extrabold text-navy-800 mt-1">{opY !== 0 ? (opX / opY).toFixed(2) : 'ERR'}</div>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="text-slate-500">관계식 (x &gt; y)</div>
+                  <div className="text-base font-extrabold text-emerald-700 mt-1">{opX > opY ? '1 (참)' : '0 (거짓)'}</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 5. Conditional Branch */}
+          {selectedVizId === 'cond_branch' && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 text-xs">
+                <span className="font-bold">점수(score): {condScore}점</span>
+                <input type="range" min="0" max="100" value={condScore} onChange={(e) => setCondScore(Number(e.target.value))} className="flex-1 max-w-xs" />
+              </div>
+              <div className="space-y-2 font-mono text-xs">
+                {[
+                  { cond: 'if (score >= 90)', branch: '등급: A', active: condScore >= 90 },
+                  { cond: 'else if (score >= 80)', branch: '등급: B', active: condScore >= 80 && condScore < 90 },
+                  { cond: 'else', branch: '등급: C', active: condScore < 80 },
+                ].map((row, idx) => (
+                  <div key={idx} className={`p-3 rounded-xl border flex justify-between items-center ${row.active ? 'bg-emerald-50 border-emerald-500 text-emerald-950 font-bold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
+                    <span>{row.cond}</span>
+                    <span>{row.active ? `▶ 실행됨 (${row.branch})` : '건너뜀'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 6. Loop Trace */}
+          {selectedVizId === 'loop_trace' && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-3 text-xs">
+                <label className="font-bold">목표 N:
+                  <select value={loopN} onChange={(e) => { setLoopN(Number(e.target.value)); setLoopStep(0); }} className="ml-1.5 px-2.5 py-1 rounded-lg border border-slate-300 font-mono">
+                    {[3, 5, 10].map((v) => <option key={v} value={v}>{v}</option>)}
+                  </select>
+                </label>
+                <button
+                  onClick={() => setLoopStep((s) => (s + 1) % loopSnapshots.length)}
+                  className="px-3.5 py-1.5 rounded-xl bg-mobility-600 text-white font-bold"
+                >
+                  한 스텝 진행 ({loopStep + 1}/{loopSnapshots.length})
+                </button>
+              </div>
+              <div className="p-4 rounded-xl bg-editor-900 text-slate-100 font-mono text-xs space-y-2">
+                <div className="text-sky-300 font-bold">{loopSnapshots[loopStep].label}</div>
+                <div className="flex gap-4">
+                  <span>현재 변수 i = <strong className="text-amber-300">{loopSnapshots[loopStep].i}</strong></span>
+                  <span>누적 sum = <strong className="text-emerald-300">{loopSnapshots[loopStep].sum}</strong></span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 7. Array & Memory Structure */}
+          {selectedVizId === 'array_mem' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-5 gap-2 font-mono text-xs text-center">
+                {arrValues.map((val, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setArrIdx(idx)}
+                    className={`p-3 rounded-xl border transition ${
+                      arrIdx === idx ? 'bg-mobility-100 border-mobility-600 font-bold' : 'bg-slate-50 border-slate-200'
+                    }`}
+                  >
+                    <div className="text-[10px] text-slate-400">0x{(0x1000 + idx * 4).toString(16)}</div>
+                    <div className="text-navy-800 mt-0.5">a[{idx}]</div>
+                    <div className="text-base font-extrabold text-mobility-600 mt-1">{val}</div>
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <button
+                  onClick={() => setArrValues((prev) => prev.map((v, i) => (i === arrIdx ? v + 5 : v)))}
+                  className="px-3 py-1.5 rounded-xl bg-navy-800 text-white font-mono font-bold"
+                >
+                  a[{arrIdx}] += 5;
+                </button>
+                <button
+                  onClick={() => setArrIdx(5)}
+                  className="px-3 py-1.5 rounded-xl bg-rose-100 text-rose-800 font-mono font-bold"
+                >
+                  a[5] 접근 시도 (범위 초과 테스트)
+                </button>
+              </div>
+              {arrIdx >= arrValues.length && (
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-300 text-xs text-rose-800 font-semibold">
+                  경고(p.131): 배열 크기가 5이므로 유효 인덱스는 0~4입니다. a[5] 접근은 배열 범위를 초과해 인접 메모리를 손상시킬 수 있습니다!
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 8. Function Call (Call by Value vs Call by Reference) */}
+          {selectedVizId === 'func_call' && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2 text-xs">
+                <button
+                  onClick={() => { setCallMode('value'); setCallStep(0); }}
+                  className={`px-3 py-1.5 rounded-xl font-bold ${callMode === 'value' ? 'bg-navy-800 text-white' : 'bg-slate-100 text-slate-700'}`}
+                >
+                  값에 의한 호출 swap(a, b) (p.219)
+                </button>
+                <button
+                  onClick={() => { setCallMode('reference'); setCallStep(0); }}
+                  className={`px-3 py-1.5 rounded-xl font-bold ${callMode === 'reference' ? 'bg-mobility-600 text-white' : 'bg-slate-100 text-slate-700'}`}
+                >
+                  참조에 의한 호출 swap(&amp;a, &amp;b) (p.220)
+                </button>
+                <button
+                  onClick={() => setCallStep((s) => (s + 1) % 3)}
+                  className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold"
+                >
+                  단계 전환 ({callStep + 1}/3)
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="font-bold text-navy-800">main() 스택 프레임</div>
+                  <div className="mt-2">
+                    a = {callMode === 'reference' && callStep === 2 ? '20 (변경됨!)' : '10'} | b = {callMode === 'reference' && callStep === 2 ? '10 (변경됨!)' : '20'}
+                  </div>
+                </div>
+                <div className="p-3.5 rounded-xl bg-mobility-100/50 border border-mobility-500/30">
+                  <div className="font-bold text-mobility-600">
+                    {callMode === 'reference' ? 'swap(int *x, int *y)' : 'swap(int x, int y)'}
+                  </div>
+                  <div className="mt-2">
+                    {callStep === 0 && '호출 대기 중'}
+                    {callStep === 1 && (callMode === 'reference' ? '*x와 *y로 main의 원본 주소를 직접 교환 중' : '복사본 x=20, y=10 만 교환됨 (원본 무관)')}
+                    {callStep === 2 && (callMode === 'reference' ? '함수 종료 후에도 main의 a=20, b=10 유지!' : '함수 종료 시 복사본 소멸 → main은 그대로 10, 20')}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 9. Pointer and Memory Address */}
+          {selectedVizId === 'ptr_addr' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
+                <div className="p-4 rounded-xl bg-white border-2 border-navy-800">
+                  <div className="text-slate-500">대상 변수 · 주소(&amp;i): 0x1000</div>
+                  <div className="font-bold text-navy-800 mt-0.5">int i</div>
+                  <div className="text-2xl font-extrabold text-mobility-600 mt-1">{ptrTargetVal}</div>
+                </div>
+                <div className={`p-4 rounded-xl border-2 ${ptrLinked ? 'bg-mobility-100/40 border-mobility-600' : 'bg-rose-50 border-rose-400'}`}>
+                  <div className="text-slate-500">포인터 변수 · 주소(&amp;p): 0x1004</div>
+                  <div className="font-bold text-navy-800 mt-0.5">int *p</div>
+                  <div className="text-lg font-extrabold mt-1">
+                    저장된 주소값(p): {ptrLinked ? '0x1000 (&i)' : 'NULL (0x0000)'}
+                  </div>
+                  <div className="text-xs mt-1 text-slate-700">
+                    역참조(*p): {ptrLinked ? `${ptrTargetVal} (i의 값)` : '역참조 불가 (위험! p.210)'}
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 text-xs font-mono">
+                <button
+                  onClick={() => setPtrLinked((v) => !v)}
+                  className="px-3 py-1.5 rounded-xl bg-navy-800 text-white font-bold"
+                >
+                  {ptrLinked ? 'p = NULL; (연결 해제)' : 'p = &i; (주소 대입)'}
+                </button>
+                <button
+                  disabled={!ptrLinked}
+                  onClick={() => setPtrTargetVal((v) => v + 10)}
+                  className="px-3 py-1.5 rounded-xl bg-mobility-600 disabled:opacity-40 text-white font-bold"
+                >
+                  *p += 10; (간접 참조로 값 수정)
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 10. Pointer and Array Relation */}
+          {selectedVizId === 'ptr_array' && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-xs font-mono">
+                <span>인덱스 오프셋 i 선택:</span>
+                {[0, 1, 2, 3, 4].map((idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setPtrOffset(idx)}
+                    className={`px-3 py-1 rounded-lg font-bold ${ptrOffset === idx ? 'bg-mobility-600 text-white' : 'bg-slate-100 text-slate-700'}`}
+                  >
+                    +{idx}
+                  </button>
+                ))}
+              </div>
+              <div className="grid grid-cols-5 gap-2 font-mono text-xs text-center">
+                {baseArr.map((val, idx) => (
+                  <div
+                    key={idx}
+                    className={`p-3 rounded-xl border ${ptrOffset === idx ? 'bg-emerald-50 border-emerald-500 font-bold' : 'bg-slate-50 border-slate-200'}`}
+                  >
+                    <div className="text-[10px] text-slate-500">0x{(0x2000 + idx * 4).toString(16)}</div>
+                    <div>a[{idx}] = {val}</div>
+                    <div className="text-[11px] text-mobility-600 mt-1">*(a+{idx})</div>
+                  </div>
+                ))}
+              </div>
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs space-y-1">
+                <div>• 메모리 주소 비교: <strong>a + {ptrOffset}</strong> == <strong>&amp;a[{ptrOffset}]</strong> == <span className="text-mobility-600 font-bold">0x{(0x2000 + ptrOffset * 4).toString(16)}</span></div>
+                <div>• 저장된 값 비교: <strong>*(a + {ptrOffset})</strong> == <strong>a[{ptrOffset}]</strong> == <strong>p[{ptrOffset}]</strong> == <span className="text-emerald-700 font-bold">{baseArr[ptrOffset]}</span></div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    /* =========================================================================
+       7. CODE EDITOR + UNIFIED INTERACTIVE TERMINAL COMPONENT
+          (Visual Studio Debug Console style: inline scanf/fgets input + echo)
+       ========================================================================= */
+    function CodeWorkbench({
+      code,
+      onChangeCode,
+      snippets,
+      onSaveSnippet,
+      onLoadSnippet,
+      compactTitle,
+      onExecutionComplete,
+      externalRunTrigger,
+    }) {
+      const [snippetTitle, setSnippetTitle] = useState('');
+      const [showVsGuide, setShowVsGuide] = useState(false);
+      const [copied, setCopied] = useState(false);
+
+      // Unified interactive terminal state
+      const [terminalEntries, setTerminalEntries] = useState([]);
+      const [isRunning, setIsRunning] = useState(false);
+      const [awaitingInput, setAwaitingInput] = useState(false);
+      const [terminalInput, setTerminalInput] = useState('');
+
+      const sessionRef = useRef(null);
+      const terminalBodyRef = useRef(null);
+      const terminalInputRef = useRef(null);
+
+      const lineCount = useMemo(() => Math.max(1, (code || '').split('\n').length), [code]);
+
+      // Auto-scroll terminal to bottom whenever entries or input prompt updates
+      useEffect(() => {
+        if (terminalBodyRef.current) {
+          terminalBodyRef.current.scrollTop = terminalBodyRef.current.scrollHeight;
+        }
+      }, [terminalEntries, awaitingInput, isRunning]);
+
+      // Focus inline terminal input automatically when scanf/fgets pauses
+      useEffect(() => {
+        if (awaitingInput && terminalInputRef.current) {
+          terminalInputRef.current.focus();
+        }
+      }, [awaitingInput]);
+
+      // Cleanup active interpreter session on unmount
+      useEffect(() => {
+        return () => {
+          if (sessionRef.current) {
+            sessionRef.current.abort();
+          }
+        };
+      }, []);
+
+      const appendTerminalChunk = useCallback((kind, text) => {
+        setTerminalEntries((prev) => {
+          if (prev.length > 0 && prev[prev.length - 1].kind === kind && (kind === 'stdout' || kind === 'echo')) {
+            const copy = [...prev];
+            copy[copy.length - 1] = { ...copy[copy.length - 1], text: copy[copy.length - 1].text + text };
+            return copy;
+          }
+          return [...prev, { id: Date.now() + '_' + Math.random().toString(36).slice(2, 7), kind, text }];
+        });
+      }, []);
+
+      const handleRunInteractive = useCallback(async () => {
+        if (sessionRef.current) {
+          sessionRef.current.abort();
+          sessionRef.current = null;
+        }
+
+        setTerminalInput('');
+        setAwaitingInput(false);
+        setIsRunning(true);
+        setTerminalEntries([
+          {
+            id: 'hdr_' + Date.now(),
+            kind: 'system',
+            text: '> ./main  (Visual Studio 디버그 콘솔 모드)\n',
+          },
+        ]);
+
+        const session = createCInterpreterSession(code, {
+          interactive: true,
+          onStdout: (chunk) => {
+            appendTerminalChunk('stdout', chunk);
+          },
+          onNeedInput: () => {
+            setAwaitingInput(true);
+          },
+        });
+
+        sessionRef.current = session;
+        const result = await session.run();
+
+        if (sessionRef.current === session) {
+          sessionRef.current = null;
+          setAwaitingInput(false);
+          setIsRunning(false);
+
+          if (result.stderr) {
+            appendTerminalChunk('stderr', `\n${result.stderr}\n`);
+          }
+          appendTerminalChunk(
+            'footer',
+            `\n[프로세스 종료됨 · 반환 코드: ${result.exitCode}]\n`
+          );
+          if (onExecutionComplete) {
+            onExecutionComplete(result);
+          }
+        }
+      }, [code, appendTerminalChunk, onExecutionComplete]);
+
+      useEffect(() => {
+        if (externalRunTrigger && externalRunTrigger > 0) {
+          handleRunInteractive();
+        }
+      }, [externalRunTrigger]);
+
+      const handleStopExecution = () => {
+        if (sessionRef.current) {
+          sessionRef.current.abort();
+        }
+      };
+
+      const handleClearTerminal = () => {
+        if (isRunning && sessionRef.current) {
+          sessionRef.current.abort();
+        }
+        setTerminalEntries([]);
+        setTerminalInput('');
+        setAwaitingInput(false);
+      };
+
+      const submitTerminalLine = (rawLine) => {
+        if (!sessionRef.current || !awaitingInput) return;
+        const payload = rawLine + '\n';
+        // Echo user's typed value directly into the terminal stream on the same line
+        appendTerminalChunk('echo', payload);
+        setTerminalInput('');
+        setAwaitingInput(false);
+        sessionRef.current.feedInput(payload);
+      };
+
+      const handleTerminalKeyDown = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          submitTerminalLine(terminalInput);
+        }
+      };
+
+      const handleTerminalPaste = (e) => {
+        const pasted = e.clipboardData?.getData('text') || '';
+        if (pasted.includes('\n')) {
+          e.preventDefault();
+          const combined = terminalInput + pasted;
+          const normalized = combined.endsWith('\n') ? combined : combined + '\n';
+          appendTerminalChunk('echo', normalized);
+          setTerminalInput('');
+          setAwaitingInput(false);
+          sessionRef.current?.feedInput(normalized);
+        }
+      };
+
+      const handleKeyDown = (e) => {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          const start = e.target.selectionStart;
+          const end = e.target.selectionEnd;
+          const next = code.substring(0, start) + '    ' + code.substring(end);
+          onChangeCode(next);
+          requestAnimationFrame(() => {
+            e.target.selectionStart = e.target.selectionEnd = start + 4;
+          });
+        } else if (e.key === 'Enter') {
+          const start = e.target.selectionStart;
+          const before = code.substring(0, start);
+          const lastLine = before.split('\n').pop() || '';
+          const indentMatch = lastLine.match(/^\s*/);
+          let indent = indentMatch ? indentMatch[0] : '';
+          if (lastLine.trimEnd().endsWith('{')) indent += '    ';
+          if (indent.length > 0) {
+            e.preventDefault();
+            const end = e.target.selectionEnd;
+            const next = before + '\n' + indent + code.substring(end);
+            onChangeCode(next);
+            requestAnimationFrame(() => {
+              e.target.selectionStart = e.target.selectionEnd = start + 1 + indent.length;
+            });
+          }
+        }
+      };
+
+      const handleCopy = () => {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = code;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        } catch (err) {
+          console.warn('Copy failed:', err);
+        }
+      };
+
+      const handleSaveClick = () => {
+        const title = snippetTitle.trim() || `내 C 코드 (${new Date().toLocaleTimeString('ko-KR')})`;
+        onSaveSnippet(title, code, '');
+        setSnippetTitle('');
+      };
+
+      return (
+        <div className="bg-editor-900 text-slate-100 rounded-2xl border border-editor-700 overflow-hidden shadow-md flex flex-col">
+          {/* Top toolbar */}
+          <div className="px-3.5 py-2.5 bg-editor-950 border-b border-editor-700 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className={`inline-block w-2.5 h-2.5 rounded-full ${isRunning ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'}`} />
+              <span className="text-xs font-mono font-semibold text-slate-200">
+                {compactTitle || 'main.c · C Editor'}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button
+                onClick={handleRunInteractive}
+                className="px-3 py-1 rounded-lg bg-mobility-500 hover:bg-mobility-600 text-white text-xs font-bold transition"
+              >
+                ▶ 실행 (Ctrl+F5)
+              </button>
+              {isRunning && (
+                <button
+                  onClick={handleStopExecution}
+                  className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition"
+                >
+                  ■ 중지
+                </button>
+              )}
+              <button
+                onClick={handleCopy}
+                className="px-2.5 py-1 rounded-lg bg-editor-800 hover:bg-editor-700 text-slate-200 text-xs font-medium border border-editor-700 transition"
+              >
+                {copied ? '복사됨' : '복사'}
+              </button>
+              <button
+                onClick={() => onChangeCode('#include <stdio.h>\n\nint main(void) {\n    printf("Hello, HINT C Lab!\\n");\n    return 0;\n}')}
+                className="px-2.5 py-1 rounded-lg bg-editor-800 hover:bg-editor-700 text-slate-200 text-xs font-medium border border-editor-700 transition"
+              >
+                초기화
+              </button>
+              <button
+                onClick={() => setShowVsGuide((v) => !v)}
+                className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 text-xs font-semibold border border-amber-400/40 transition"
+              >
+                VS 실행 차이 안내
+              </button>
+            </div>
+          </div>
+
+          {/* Visual Studio difference banner */}
+          {showVsGuide && (
+            <div className="p-3 bg-amber-950/60 border-b border-amber-700/50 text-xs text-amber-100 space-y-1">
+              <div className="font-bold text-amber-300">Visual Studio 실행 차이 안내 (교재 p.35~47, p.83)</div>
+              <p>• <strong>main.c vs main.cpp</strong>: 새 항목 생성 시 기본 확장자가 .cpp로 잡힐 수 있으므로 C언어 학습 시 .c 파일로 지정하세요(p.35~36).</p>
+              <p>• <strong>인코딩 &amp; _CRT_SECURE_NO_WARNINGS</strong>: Visual Studio 환경의 인코딩 설정과 scanf 보안 경고 안내를 확인하세요(p.38, p.83).</p>
+              <p>• <strong>Windows API</strong>: 교재 p.42, p.44의 Sleep() 등은 Windows 환경 전용 헤더/함수이며, 웹 컴파일러에서는 표준 C 입출력·연산·포인터·배열·함수를 중심으로 실행됩니다.</p>
+            </div>
+          )}
+
+          {/* Code editor with line numbers */}
+          <div className="flex min-h-[220px] max-h-[340px] overflow-auto bg-editor-900">
+            <div
+              aria-hidden="true"
+              className="py-3 px-2.5 text-right select-none bg-editor-950/70 text-slate-500 font-mono text-xs leading-6 border-r border-editor-800 min-w-[42px]"
+            >
+              {Array.from({ length: lineCount }, (_, idx) => (
+                <div key={idx}>{idx + 1}</div>
+              ))}
+            </div>
+            <textarea
+              value={code}
+              onChange={(e) => onChangeCode(e.target.value)}
+              onKeyDown={handleKeyDown}
+              spellCheck={false}
+              aria-label="C 코드 편집기"
+              className="code-font flex-1 w-full p-3 bg-transparent text-slate-100 text-xs leading-6 focus:outline-none resize-none"
+            />
+          </div>
+
+          {/* Unified Interactive Debug Console Terminal */}
+          <div className="border-t border-editor-700 bg-[#070B14] flex flex-col">
+            <div className="px-3.5 py-2 bg-editor-950 border-b border-editor-800 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono font-bold text-sky-300">
+                  디버그 콘솔 터미널 (Interactive Terminal)
+                </span>
+                {awaitingInput && (
+                  <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40 animate-pulse">
+                    입력 대기 중 (타이핑 후 Enter)
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5">
+                {isRunning && (
+                  <button
+                    onClick={handleStopExecution}
+                    className="px-2.5 py-1 rounded-md bg-rose-600/90 hover:bg-rose-500 text-white text-[11px] font-bold"
+                  >
+                    중지 (Stop)
+                  </button>
+                )}
+                <button
+                  onClick={handleClearTerminal}
+                  className="px-2.5 py-1 rounded-md bg-editor-800 hover:bg-editor-700 text-slate-300 text-[11px] font-semibold border border-editor-700"
+                >
+                  터미널 지우기 (Clear)
+                </button>
+              </div>
+            </div>
+
+            <div
+              ref={terminalBodyRef}
+              onClick={() => {
+                if (awaitingInput && terminalInputRef.current) {
+                  terminalInputRef.current.focus();
+                }
+              }}
+              className="p-3.5 font-mono text-xs leading-6 min-h-[175px] max-h-[270px] overflow-y-auto cursor-text select-text"
+            >
+              {terminalEntries.length === 0 ? (
+                <div className="text-slate-500">
+                  <div>&gt; 상단의 <span className="text-sky-300 font-semibold">[▶ 실행 (Ctrl+F5)]</span> 버튼을 누르면 Visual Studio 디버그 콘솔처럼 실행됩니다.</div>
+                  <div className="mt-1 text-[11px]">• <code>scanf()</code>나 <code>fgets()</code>를 만나면 해당 줄 끝에 커서가 깜빡이며 직접 값을 입력할 수 있습니다.</div>
+                </div>
+              ) : (
+                <div className="whitespace-pre-wrap break-words">
+                  {terminalEntries.map((entry) => {
+                    if (entry.kind === 'system') {
+                      return (
+                        <span key={entry.id} className="text-slate-400 font-semibold">
+                          {entry.text}
+                        </span>
+                      );
+                    }
+                    if (entry.kind === 'stdout') {
+                      return (
+                        <span key={entry.id} className="text-slate-100">
+                          {entry.text}
+                        </span>
+                      );
+                    }
+                    if (entry.kind === 'echo') {
+                      return (
+                        <span key={entry.id} className="text-emerald-300 font-bold">
+                          {entry.text}
+                        </span>
+                      );
+                    }
+                    if (entry.kind === 'stderr') {
+                      return (
+                        <div
+                          key={entry.id}
+                          className="my-2 p-2.5 rounded-xl bg-rose-950/70 border border-rose-500/50 text-rose-300 whitespace-pre-wrap"
+                        >
+                          {entry.text.trim()}
+                        </div>
+                      );
+                    }
+                    return (
+                      <span key={entry.id} className="text-sky-400/80 text-[11px]">
+                        {entry.text}
+                      </span>
+                    );
+                  })}
+
+                  {/* Inline terminal input prompt right at the end of current printf line */}
+                  {awaitingInput && (
+                    <span className="inline-flex items-center align-baseline max-w-full">
+                      <input
+                        ref={terminalInputRef}
+                        type="text"
+                        value={terminalInput}
+                        onChange={(e) => setTerminalInput(e.target.value)}
+                        onKeyDown={handleTerminalKeyDown}
+                        onPaste={handleTerminalPaste}
+                        placeholder="값 입력 후 Enter..."
+                        aria-label="터미널 표준 입력"
+                        style={{ width: `${Math.max(14, terminalInput.length + 3)}ch` }}
+                        className="bg-emerald-950/50 text-emerald-200 font-mono text-xs px-1.5 py-0.5 rounded border border-emerald-500/60 focus:outline-none focus:border-emerald-400 max-w-full"
+                      />
+                      <span className="terminal-cursor text-emerald-400 font-bold ml-0.5">█</span>
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* LocalStorage Snippet Save / Load */}
+          {snippets && onSaveSnippet && (
+            <div className="p-3 bg-editor-900 border-t border-editor-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                <input
+                  type="text"
+                  value={snippetTitle}
+                  onChange={(e) => setSnippetTitle(e.target.value)}
+                  placeholder="저장할 코드 제목 입력..."
+                  className="px-2.5 py-1 rounded-lg bg-editor-950 border border-editor-700 text-slate-100 text-xs flex-1 focus:outline-none"
+                />
+                <button
+                  onClick={handleSaveClick}
+                  className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
+                >
+                  저장
+                </button>
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {snippets.slice(0, 4).map((sn) => (
+                  <button
+                    key={sn.id}
+                    onClick={() => onLoadSnippet(sn)}
+                    className="px-2 py-1 rounded-md bg-editor-800 hover:bg-editor-700 text-slate-200 border border-editor-700"
+                    title="불러오기"
+                  >
+                    {sn.title}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    /* =========================================================================
+       8. MAIN APPLICATION WITH ALL 6 MENUS & 2-COLUMN RESPONSIVE WORKBENCH
+       ========================================================================= */
+    function App() {
+      const [activeMenu, setActiveMenu] = useState('theory');
+      const [selectedLessonId, setSelectedLessonId] = useState('u1_intro');
+      const [selectedVizId, setSelectedVizId] = useState('exec_flow');
+      const [selectedProblemId, setSelectedProblemId] = useState(PRACTICE_PROBLEMS[0].id);
+      const [practiceFilterLevel, setPracticeFilterLevel] = useState(0);
+
+      // Persistent states
+      const [progress, setProgress] = useState(() => safeLoad(STORAGE_KEYS.progress, DEFAULT_PROGRESS));
+      const [practiceState, setPracticeState] = useState(() => safeLoad(STORAGE_KEYS.practice, DEFAULT_PRACTICE));
+      const [quizState, setQuizState] = useState(() => safeLoad(STORAGE_KEYS.quiz, DEFAULT_QUIZ));
+      const [snippets, setSnippets] = useState(() => safeLoad(STORAGE_KEYS.snippets, DEFAULT_SNIPPETS));
+
+      // Editor & runner state
+      const [code, setCode] = useState(() => safeLoad(STORAGE_KEYS.editorDraft, LESSONS[0].practiceSample));
+
+      // Lesson inline quiz answer state
+      const [lessonQuizPick, setLessonQuizPick] = useState(null);
+
+      // Practice state
+      const [hintLevel, setHintLevel] = useState(0);
+      const [showSolution, setShowSolution] = useState(false);
+      const [gradingResults, setGradingResults] = useState(null);
+      const [isGrading, setIsGrading] = useState(false);
+
+      // Quiz & Review state
+      const [quizMode, setQuizMode] = useState('all'); // 'all' | 'random' | 'wrong'
+      const [quizIndex, setQuizIndex] = useState(0);
+      const [quizSelected, setQuizSelected] = useState('');
+      const [quizFeedback, setQuizFeedback] = useState(null);
+
+      useEffect(() => { safeSave(STORAGE_KEYS.progress, progress); }, [progress]);
+      useEffect(() => { safeSave(STORAGE_KEYS.practice, practiceState); }, [practiceState]);
+      useEffect(() => { safeSave(STORAGE_KEYS.quiz, quizState); }, [quizState]);
+      useEffect(() => { safeSave(STORAGE_KEYS.snippets, snippets); }, [snippets]);
+      useEffect(() => { safeSave(STORAGE_KEYS.editorDraft, code); }, [code]);
+
+      const logActivity = useCallback((actionText, pageRef = '') => {
+        setProgress((prev) => ({
+          ...prev,
+          lastVisited: { menu: activeMenu, lessonId: selectedLessonId, updatedAt: new Date().toISOString() },
+          activityLog: [
+            { id: Date.now() + '_' + Math.random().toString(36).slice(2, 6), text: actionText, pageRef, time: new Date().toLocaleTimeString('ko-KR') },
+            ...(prev.activityLog || []),
+          ].slice(0, 25),
+        }));
+      }, [activeMenu, selectedLessonId]);
+
+      const currentLesson = useMemo(
+        () => LESSONS.find((l) => l.id === selectedLessonId) || LESSONS[0],
+        [selectedLessonId]
+      );
+
+      const currentProblem = useMemo(
+        () => PRACTICE_PROBLEMS.find((p) => p.id === selectedProblemId) || PRACTICE_PROBLEMS[0],
+        [selectedProblemId]
+      );
+
+      const activeQuizList = useMemo(() => {
+        if (quizMode === 'wrong') {
+          const filtered = QUIZ_BANK.filter((q) => (quizState.wrongIds || []).includes(q.id));
+          return filtered.length > 0 ? filtered : QUIZ_BANK;
+        }
+        if (quizMode === 'random') {
+          return [...QUIZ_BANK].sort(() => Math.random() - 0.5).slice(0, 5);
+        }
+        return QUIZ_BANK;
+      }, [quizMode, quizState.wrongIds]);
+
+      const handleSendToCompiler = (sampleCode, pageRef = '') => {
+        setCode(sampleCode);
+        setActiveMenu('compiler');
+        logActivity('실습 예제를 C 실습실로 불러옴', pageRef);
+      };
+
+      const handleToggleComplete = (lessonId, pageRef) => {
+        setProgress((prev) => {
+          const exists = prev.completedLessons.includes(lessonId);
+          const next = exists
+            ? prev.completedLessons.filter((id) => id !== lessonId)
+            : [...prev.completedLessons, lessonId];
+          return { ...prev, completedLessons: next };
+        });
+        logActivity('단원 학습 완료 상태 변경', pageRef);
+      };
+
+      const handleGradeProblem = async () => {
+        setIsGrading(true);
+        const cases = [];
+        for (const tc of currentProblem.testCases) {
+          const res = await executeCProgram(code, tc.input);
+          const actual = (res.stdout || '').trim();
+          const expected = tc.expected.trim();
+          const passed = !res.stderr && actual === expected;
+          cases.push({ ...tc, actual, stderr: res.stderr, passed });
+        }
+        const allPassed = cases.every((c) => c.passed);
+        setGradingResults(cases);
+        setIsGrading(false);
+
+        setPracticeState((prev) => {
+          const nextSolved = allPassed && !prev.solvedIds.includes(currentProblem.id)
+            ? [...prev.solvedIds, currentProblem.id]
+            : prev.solvedIds;
+          return {
+            solvedIds: nextSolved,
+            attempts: {
+              ...prev.attempts,
+              [currentProblem.id]: {
+                passed: allPassed,
+                code,
+                updatedAt: new Date().toLocaleTimeString('ko-KR'),
+              },
+            },
+          };
+        });
+        logActivity(`문제 채점 (${currentProblem.title}): ${allPassed ? '통과' : '재시도 필요'}`, currentProblem.pageRef);
+      };
+
+      const handleSelectProblem = (prob) => {
+        setSelectedProblemId(prob.id);
+        setCode(prob.sampleCode);
+        setHintLevel(0);
+        setShowSolution(false);
+        setGradingResults(null);
+      };
+
+      const handleSubmitQuiz = () => {
+        const q = activeQuizList[quizIndex % activeQuizList.length];
+        if (!q || !quizSelected) return;
+        const isCorrect = quizSelected === q.answer;
+        setQuizFeedback({ isCorrect, explanation: q.explanation, answer: q.answer });
+
+        setQuizState((prev) => {
+          const nextWrong = isCorrect
+            ? (prev.wrongIds || []).filter((id) => id !== q.id)
+            : Array.from(new Set([...(prev.wrongIds || []), q.id]));
+          return {
+            wrongIds: nextWrong,
+            history: [
+              {
+                id: q.id,
+                unit: q.unit,
+                type: q.type,
+                correct: isCorrect,
+                pageRef: q.pageRef,
+                timestamp: new Date().toLocaleTimeString('ko-KR'),
+              },
+              ...(prev.history || []),
+            ].slice(0, 60),
+          };
+        });
+        logActivity(`퀴즈 풀이 (${q.type}): ${isCorrect ? '정답' : '오답'}`, q.pageRef);
+      };
+
+      const handleExportJson = () => {
+        try {
+          const payload = {
+            exportedAt: new Date().toISOString(),
+            progress,
+            practice: practiceState,
+            quiz: quizState,
+            snippets,
+          };
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'hint-c-lab-progress.json';
+          a.click();
+          URL.revokeObjectURL(url);
+        } catch (err) {
+          console.warn('Export error:', err);
+        }
+      };
+
+      const handleResetAllData = () => {
+        Object.values(STORAGE_KEYS).forEach((k) => {
+          try { window.localStorage.removeItem(k); } catch (_) {}
+        });
+        setProgress(DEFAULT_PROGRESS);
+        setPracticeState(DEFAULT_PRACTICE);
+        setQuizState(DEFAULT_QUIZ);
+        setSnippets(DEFAULT_SNIPPETS);
+        setCode(LESSONS[0].practiceSample);
+      };
+
+      const overallPercent = Math.round((progress.completedLessons.length / LESSONS.length) * 100);
+      const quizAccuracy = useMemo(() => {
+        if (!quizState.history || quizState.history.length === 0) return 0;
+        const ok = quizState.history.filter((h) => h.correct).length;
+        return Math.round((ok / quizState.history.length) * 100);
+      }, [quizState.history]);
+
+      const navItems = [
+        { id: 'theory', label: '이론 학습', sub: 'Theory' },
+        { id: 'compiler', label: 'C 실습실', sub: 'Compiler' },
+        { id: 'viz', label: '시각화 학습', sub: 'Visualization' },
+        { id: 'practice', label: '문제 풀이', sub: 'Practice' },
+        { id: 'quiz', label: '시험 및 복습', sub: 'Quiz & Review' },
+        { id: 'progress', label: '학습 기록', sub: 'Progress' },
+      ];
+
+      return (
+        <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800">
+          {/* Global Top Navigation Bar */}
+          <header className="bg-navy-800 text-white border-b border-navy-700 sticky top-0 z-30 shadow-sm">
+            <div className="max-w-[1440px] mx-auto px-3 sm:px-6 py-2.5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-mobility-500 flex items-center justify-center font-mono font-extrabold text-sm shadow">
+                    C
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-extrabold tracking-tight text-sm sm:text-base">
+                        HINT C Programming Lab
+                      </span>
+                      <span className="hidden sm:inline-block text-[11px] font-mono px-2 py-0.5 rounded-full bg-navy-700 text-sky-200">
+                        강의자료.pdf · 234p
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-300">
+                      현대자동차 HINT 모빌리티 SW 아카데미 실습 플랫폼
+                    </div>
+                  </div>
+                </div>
+                <div className="lg:hidden text-xs font-mono bg-navy-700 px-2.5 py-1 rounded-lg">
+                  진도 {overallPercent}%
+                </div>
+              </div>
+
+              {/* 6 Top-Level Menus */}
+              <nav className="flex items-center gap-1 overflow-x-auto pb-1 lg:pb-0" aria-label="주 메뉴">
+                {navItems.map((item) => {
+                  const active = activeMenu === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveMenu(item.id)}
+                      className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition ${
+                        active
+                          ? 'bg-mobility-500 text-white shadow'
+                          : 'text-slate-200 hover:bg-navy-700'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
+                <div className="hidden lg:flex items-center ml-2 px-3 py-1 rounded-xl bg-navy-900 border border-navy-700 text-xs font-mono text-sky-200 whitespace-nowrap">
+                  진도 {overallPercent}%
+                </div>
+              </nav>
+            </div>
+          </header>
+
+          {/* Main Content Area */}
+          <main className="flex-1 max-w-[1440px] w-full mx-auto px-3 sm:px-6 py-4">
+            {/* 1. THEORY MENU (2-Column Desktop Split: Theory Left + Code Workbench Right) */}
+            {activeMenu === 'theory' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+                {/* Left: Curriculum & 10-Block Lesson */}
+                <section className="lg:col-span-7 space-y-4">
+                  <div className="bg-white rounded-2xl border border-slate-200 p-3 shadow-sm">
+                    <div className="flex gap-1.5 overflow-x-auto pb-1">
+                      {LESSONS.map((les) => {
+                        const done = progress.completedLessons.includes(les.id);
+                        const isSel = les.id === currentLesson.id;
+                        return (
+                          <button
+                            key={les.id}
+                            onClick={() => {
+                              setSelectedLessonId(les.id);
+                              setLessonQuizPick(null);
+                              if (les.vizId) setSelectedVizId(les.vizId);
+                            }}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 ${
+                              isSel
+                                ? 'bg-navy-800 text-white'
+                                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                            }`}
+                          >
+                            {done && <span className="text-emerald-400">✓</span>}
+                            <span>{les.unit.split('.')[0]}단원</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <article className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-5">
+                    <div className="flex flex-wrap items-start justify-between gap-2 border-b border-slate-100 pb-4">
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-mobility-100 text-mobility-600">
+                            {currentLesson.unit}
+                          </span>
+                          <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                            출처: {currentLesson.pageRef}
+                          </span>
+                        </div>
+                        <h1 className="text-xl sm:text-2xl font-extrabold text-navy-800 mt-2">
+                          {currentLesson.title}
+                        </h1>
+                      </div>
+                      <button
+                        onClick={() => handleToggleComplete(currentLesson.id, currentLesson.pageRef)}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition ${
+                          progress.completedLessons.includes(currentLesson.id)
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                        }`}
+                      >
+                        {progress.completedLessons.includes(currentLesson.id) ? '✓ 학습 완료됨' : '학습 완료 체크'}
+                      </button>
+                    </div>
+
+                    {/* 1. 학습 목표 */}
+                    <div>
+                      <h2 className="text-sm font-bold text-navy-800 mb-1.5">1. 학습 목표</h2>
+                      <ul className="list-disc list-inside text-sm text-slate-700 space-y-1">
+                        {currentLesson.objectives.map((obj, idx) => <li key={idx}>{obj}</li>)}
+                      </ul>
+                    </div>
+
+                    {/* 2. 핵심 개념 */}
+                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                      <h2 className="text-sm font-bold text-navy-800 mb-1.5">2. 핵심 개념</h2>
+                      <ul className="list-disc list-inside text-sm text-slate-700 space-y-1">
+                        {currentLesson.coreConcepts.map((c, idx) => <li key={idx}>{c}</li>)}
+                      </ul>
+                    </div>
+
+                    {/* 3. 쉬운 개념 설명 & 4. 실생활 비유 및 예시 */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="p-3.5 rounded-xl bg-white border border-slate-200">
+                        <h2 className="text-sm font-bold text-navy-800 mb-1">3. 쉬운 개념 설명</h2>
+                        <p className="text-sm text-slate-700 leading-relaxed">{currentLesson.easyExplanation}</p>
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-mobility-100/60 border border-mobility-500/20">
+                        <h2 className="text-sm font-bold text-mobility-600 mb-1">4. 실생활 비유 및 예시</h2>
+                        <p className="text-sm text-slate-700 leading-relaxed">{currentLesson.analogy}</p>
+                      </div>
+                    </div>
+
+                    {/* 5. 시각적 자료와 다이어그램 */}
+                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <h2 className="text-sm font-bold text-navy-800">5. 시각적 자료와 다이어그램</h2>
+                        <p className="text-xs font-mono text-slate-700 mt-1">{currentLesson.diagramNote}</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (currentLesson.vizId) setSelectedVizId(currentLesson.vizId);
+                          setActiveMenu('viz');
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-navy-800 text-white text-xs font-semibold hover:bg-navy-700"
+                      >
+                        시각화 보기 →
+                      </button>
+                    </div>
+
+                    {/* 6. 교재 기반 코드 분석 (원문 vs 보충 설명 분리) */}
+                    <div className="space-y-2.5">
+                      <h2 className="text-sm font-bold text-navy-800">6. 교재 기반 코드 분석</h2>
+                      <pre className="p-3.5 rounded-xl bg-editor-900 text-slate-100 text-xs overflow-x-auto">
+                        {currentLesson.originalCode}
+                      </pre>
+                      <div className="p-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-700">
+                        <span className="font-bold text-navy-800">원문 해설: </span>
+                        {currentLesson.codeNoteOriginal}
+                      </div>
+                      <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-slate-800">
+                        <span className="font-bold text-amber-800">보충 설명 / 추가 학습: </span>
+                        {currentLesson.codeNoteSupplement}
+                      </div>
+                    </div>
+
+                    {/* 7. 코드 실행 결과 & 8. 실습 예제 */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="p-3.5 rounded-xl bg-editor-950 text-emerald-300 text-xs font-mono">
+                        <div className="text-slate-400 font-sans font-bold mb-1">7. 코드 실행 결과</div>
+                        <pre className="whitespace-pre-wrap">{currentLesson.expectedOutput}</pre>
+                      </div>
+                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between gap-2">
+                        <div>
+                          <div className="text-sm font-bold text-navy-800">8. 실습 예제</div>
+                          <p className="text-xs text-slate-600 mt-0.5">
+                            직접 값을 바꾸며 실행해 보려면 아래 버튼으로 코드를 불러오세요.
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleSendToCompiler(currentLesson.practiceSample, currentLesson.pageRef)}
+                          className="px-3.5 py-2 rounded-xl bg-mobility-600 hover:bg-mobility-500 text-white text-xs font-bold self-start"
+                        >
+                          실습실로 코드 보내기
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* 9. 핵심 내용 정리 */}
+                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                      <h2 className="text-sm font-bold text-navy-800 mb-1.5">9. 핵심 내용 정리</h2>
+                      <ul className="list-disc list-inside text-xs sm:text-sm text-slate-700 space-y-1">
+                        {currentLesson.summary.map((s, idx) => <li key={idx}>{s}</li>)}
+                      </ul>
+                    </div>
+
+                    {/* 10. 이해도 확인 퀴즈 */}
+                    <div className="p-4 rounded-xl bg-mobility-100/40 border border-mobility-500/30 space-y-2.5">
+                      <h2 className="text-sm font-bold text-navy-800">10. 이해도 확인 퀴즈</h2>
+                      <p className="text-sm font-medium text-slate-800">{currentLesson.checkQuiz.question}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {currentLesson.checkQuiz.options.map((opt, idx) => {
+                          const picked = lessonQuizPick === idx;
+                          return (
+                            <button
+                              key={opt}
+                              onClick={() => setLessonQuizPick(idx)}
+                              className={`p-2.5 rounded-xl border text-left text-xs font-semibold transition ${
+                                picked ? 'bg-navy-800 text-white border-navy-800' : 'bg-white text-slate-700 border-slate-200 hover:border-mobility-500'
+                              }`}
+                            >
+                              {opt}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {lessonQuizPick !== null && (
+                        <div className={`p-2.5 rounded-xl text-xs font-medium ${
+                          lessonQuizPick === currentLesson.checkQuiz.answerIndex
+                            ? 'bg-emerald-100 text-emerald-900'
+                            : 'bg-rose-100 text-rose-900'
+                        }`}>
+                          {lessonQuizPick === currentLesson.checkQuiz.answerIndex ? '정답입니다! ' : '다시 생각해 보세요. '}
+                          {currentLesson.checkQuiz.explanation}
+                        </div>
+                      )}
+                    </div>
+                  </article>
+                </section>
+
+                {/* Right: Live C Workbench */}
+                <aside className="lg:col-span-5 lg:sticky lg:top-20">
+                  <CodeWorkbench
+                    code={code}
+                    onChangeCode={setCode}
+                    snippets={snippets}
+                    onSaveSnippet={(title, c) => {
+                      setSnippets((prev) => [
+                        { id: 'snip_' + Date.now(), title, code: c, stdin: '', updatedAt: new Date().toLocaleTimeString('ko-KR') },
+                        ...prev,
+                      ]);
+                      logActivity(`코드 스니펫 저장: ${title}`);
+                    }}
+                    onLoadSnippet={(sn) => {
+                      setCode(sn.code);
+                    }}
+                    onExecutionComplete={() => logActivity('C 코드 실행', currentLesson.pageRef)}
+                    compactTitle="이론 연동 C 실습기"
+                  />
+                </aside>
+              </div>
+            )}
+
+            {/* 2. COMPILER LAB MENU */}
+            {activeMenu === 'compiler' && (
+              <div className="space-y-4">
+                <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h1 className="text-lg font-extrabold text-navy-800">C 실습실 (Online C Compiler)</h1>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Visual Studio 디버그 콘솔처럼 <code>printf()</code> 출력과 <code>scanf()</code> / <code>fgets()</code> 입력이 하나의 터미널에서 대화형으로 이어집니다.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {snippets.map((sn) => (
+                      <button
+                        key={sn.id}
+                        onClick={() => {
+                          setCode(sn.code);
+                        }}
+                        className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold"
+                      >
+                        예제: {sn.title}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <CodeWorkbench
+                  code={code}
+                  onChangeCode={setCode}
+                  snippets={snippets}
+                  onSaveSnippet={(title, c) => {
+                    setSnippets((prev) => [
+                      { id: 'snip_' + Date.now(), title, code: c, stdin: '', updatedAt: new Date().toLocaleTimeString('ko-KR') },
+                      ...prev,
+                    ]);
+                    logActivity(`코드 스니펫 저장: ${title}`);
+                  }}
+                  onLoadSnippet={(sn) => {
+                    setCode(sn.code);
+                  }}
+                  onExecutionComplete={() => logActivity('C 실습실 코드 실행')}
+                  compactTitle="main.c · 통합 터미널 실습기"
+                />
+              </div>
+            )}
+
+            {/* 3. VISUALIZATION MENU (All 10 Simulators + Code Preview) */}
+            {activeMenu === 'viz' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+                <div className="lg:col-span-7">
+                  <VisualizationSuite selectedVizId={selectedVizId} onSelectViz={setSelectedVizId} />
+                </div>
+                <div className="lg:col-span-5">
+                  <CodeWorkbench
+                    code={code}
+                    onChangeCode={setCode}
+                    snippets={snippets}
+                    onExecutionComplete={() => logActivity('시각화 연동 코드 실행')}
+                    compactTitle="시각화 연동 코드 테스트"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* 4. CODING PRACTICE MENU (Levels 1~4 + Automated Grading) */}
+            {activeMenu === 'practice' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+                <section className="lg:col-span-6 space-y-4">
+                  <div className="bg-white rounded-2xl border border-slate-200 p-3 shadow-sm flex flex-wrap gap-1.5">
+                    {[0, 1, 2, 3, 4].map((lv) => (
+                      <button
+                        key={lv}
+                        onClick={() => setPracticeFilterLevel(lv)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold ${
+                          practiceFilterLevel === lv ? 'bg-navy-800 text-white' : 'bg-slate-100 text-slate-700'
+                        }`}
+                      >
+                        {lv === 0 ? '전체 난이도' : `Level ${lv}`}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    {PRACTICE_PROBLEMS.filter((p) => practiceFilterLevel === 0 || p.level === practiceFilterLevel).map((prob) => {
+                      const solved = practiceState.solvedIds.includes(prob.id);
+                      const active = prob.id === currentProblem.id;
+                      return (
+                        <button
+                          key={prob.id}
+                          onClick={() => handleSelectProblem(prob)}
+                          className={`px-3 py-2 rounded-xl border text-xs font-bold whitespace-nowrap transition ${
+                            active
+                              ? 'bg-mobility-600 text-white border-mobility-600'
+                              : 'bg-white text-slate-700 border-slate-200 hover:border-mobility-500'
+                          }`}
+                        >
+                          {solved ? '✓ ' : ''}{prob.title}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-mobility-100 text-mobility-600">
+                          {currentProblem.levelLabel}
+                        </span>
+                        <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                          {currentProblem.pageRef}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSelectedLessonId(currentProblem.lessonId);
+                          setActiveMenu('theory');
+                        }}
+                        className="text-xs font-bold text-mobility-600 hover:underline"
+                      >
+                        관련 이론 보기 →
+                      </button>
+                    </div>
+
+                    <h1 className="text-xl font-extrabold text-navy-800">{currentProblem.title}</h1>
+                    <p className="text-sm text-slate-700 leading-relaxed">{currentProblem.description}</p>
+
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-700 whitespace-pre-line">
+                      {currentProblem.ioCondition}
+                    </div>
+
+                    {/* Progressive Hints & Solution */}
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => setHintLevel((h) => Math.min(2, h + 1))}
+                        className="px-3 py-1.5 rounded-xl bg-amber-100 text-amber-900 text-xs font-bold hover:bg-amber-200"
+                      >
+                        힌트 보기 ({Math.min(2, hintLevel + 1)}/2단계)
+                      </button>
+                      <button
+                        onClick={() => setShowSolution((s) => !s)}
+                        className="px-3 py-1.5 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-50"
+                      >
+                        {showSolution ? '정답 코드 숨기기' : '정답 및 해설 보기'}
+                      </button>
+                    </div>
+
+                    {hintLevel >= 1 && (
+                      <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-950">
+                        {currentProblem.hints[0]}
+                      </div>
+                    )}
+                    {hintLevel >= 2 && (
+                      <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-950">
+                        {currentProblem.hints[1]}
+                      </div>
+                    )}
+
+                    {showSolution && (
+                      <div className="space-y-2 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                        <div className="text-xs font-bold text-navy-800">해설: {currentProblem.explanation}</div>
+                        <pre className="p-3 rounded-xl bg-editor-900 text-slate-100 text-xs overflow-x-auto">
+                          {currentProblem.solutionCode}
+                        </pre>
+                        <button
+                          onClick={() => setCode(currentProblem.solutionCode)}
+                          className="px-3 py-1 rounded-lg bg-navy-800 text-white text-xs font-semibold"
+                        >
+                          정답 코드 에디터에 넣기
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Automated Grading Results */}
+                    {gradingResults && (
+                      <div className="space-y-2 pt-2 border-t border-slate-100">
+                        <div className="text-xs font-bold text-navy-800">테스트케이스 채점 결과</div>
+                        {gradingResults.map((c, idx) => (
+                          <div
+                            key={idx}
+                            className={`p-2.5 rounded-xl border text-xs font-mono ${
+                              c.passed ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-rose-50 border-rose-200 text-rose-900'
+                            }`}
+                          >
+                            <div className="font-bold">
+                              {c.passed ? '✓ PASS' : '✕ FAIL'} · {c.desc}
+                            </div>
+                            <div>입력: {c.input} | 기대값: {c.expected} | 실제 출력: {c.stderr || c.actual || '(없음)'}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </section>
+
+                <aside className="lg:col-span-6 space-y-3">
+                  <div className="flex items-center justify-between gap-2 bg-white px-3.5 py-2 rounded-2xl border border-slate-200 shadow-sm">
+                    <span className="text-xs text-slate-600">
+                      터미널에서 <strong>직접 실행</strong>하거나, 테스트케이스로 <strong>자동 채점</strong>하세요.
+                    </span>
+                    <button
+                      onClick={handleGradeProblem}
+                      disabled={isGrading}
+                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs sm:text-sm font-extrabold shadow whitespace-nowrap"
+                    >
+                      {isGrading ? '채점 중...' : '✓ 자동 채점하기'}
+                    </button>
+                  </div>
+                  <CodeWorkbench
+                    code={code}
+                    onChangeCode={setCode}
+                    snippets={snippets}
+                    onExecutionComplete={() => logActivity(`문제 직접 실행 (${currentProblem.title})`, currentProblem.pageRef)}
+                    compactTitle={`문제 실습 · ${currentProblem.title}`}
+                  />
+                </aside>
+              </div>
+            )}
+
+            {/* 5. QUIZ & REVIEW MENU */}
+            {activeMenu === 'quiz' && (
+              <div className="max-w-3xl mx-auto space-y-4">
+                <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h1 className="text-lg font-extrabold text-navy-800">시험 및 복습 (Quiz &amp; Review)</h1>
+                    <p className="text-xs text-slate-600">
+                      단원 퀴즈 정답률: <strong className="text-mobility-600">{quizAccuracy}%</strong> · 오답 노트 문항: <strong className="text-rose-600">{(quizState.wrongIds || []).length}개</strong>
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { id: 'all', label: '전체 퀴즈' },
+                      { id: 'random', label: '랜덤 출제' },
+                      { id: 'wrong', label: `오답 노트 (${(quizState.wrongIds || []).length})` },
+                    ].map((m) => (
+                      <button
+                        key={m.id}
+                        onClick={() => {
+                          setQuizMode(m.id);
+                          setQuizIndex(0);
+                          setQuizSelected('');
+                          setQuizFeedback(null);
+                        }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold ${
+                          quizMode === m.id ? 'bg-navy-800 text-white' : 'bg-slate-100 text-slate-700'
+                        }`}
+                      >
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {activeQuizList.length > 0 && (() => {
+                  const q = activeQuizList[quizIndex % activeQuizList.length];
+                  return (
+                    <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm space-y-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-0.5 rounded-full bg-navy-800 text-white font-bold">{q.type}</span>
+                          <span className="text-slate-600 font-semibold">{q.unit}</span>
+                        </div>
+                        <span className="font-mono px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                          {q.pageRef} · {(quizIndex % activeQuizList.length) + 1}/{activeQuizList.length}
+                        </span>
+                      </div>
+
+                      <h2 className="text-base sm:text-lg font-bold text-navy-800 leading-snug">{q.question}</h2>
+
+                      <div className="space-y-2">
+                        {q.options.map((opt) => {
+                          const picked = quizSelected === opt;
+                          return (
+                            <button
+                              key={opt}
+                              onClick={() => setQuizSelected(opt)}
+                              className={`w-full p-3 rounded-xl border text-left text-xs sm:text-sm font-medium transition ${
+                                picked ? 'bg-mobility-100 border-mobility-600 text-navy-800 font-bold' : 'bg-white border-slate-200 hover:border-slate-400'
+                              }`}
+                            >
+                              {opt}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+                        <button
+                          onClick={handleSubmitQuiz}
+                          disabled={!quizSelected}
+                          className="px-4 py-2 rounded-xl bg-mobility-600 disabled:opacity-40 text-white text-xs sm:text-sm font-bold"
+                        >
+                          정답 제출
+                        </button>
+                        <button
+                          onClick={() => {
+                            setQuizIndex((i) => (i + 1) % activeQuizList.length);
+                            setQuizSelected('');
+                            setQuizFeedback(null);
+                          }}
+                          className="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 text-xs sm:text-sm font-bold hover:bg-slate-50"
+                        >
+                          다음 문항 →
+                        </button>
+                      </div>
+
+                      {quizFeedback && (
+                        <div className={`p-3.5 rounded-xl text-xs sm:text-sm ${
+                          quizFeedback.isCorrect ? 'bg-emerald-50 border border-emerald-200 text-emerald-900' : 'bg-rose-50 border border-rose-200 text-rose-900'
+                        }`}>
+                          <div className="font-extrabold">
+                            {quizFeedback.isCorrect ? '정답입니다!' : `오답입니다. 정답: ${quizFeedback.answer}`}
+                          </div>
+                          <p className="mt-1">{quizFeedback.explanation}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* 6. PROGRESS MENU */}
+            {activeMenu === 'progress' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                    <div className="text-xs text-slate-500">전체 이론 진도율</div>
+                    <div className="text-2xl font-extrabold text-navy-800 mt-1">{overallPercent}%</div>
+                    <div className="text-xs text-slate-500 mt-0.5">{progress.completedLessons.length} / {LESSONS.length} 단원 완료</div>
+                  </div>
+                  <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                    <div className="text-xs text-slate-500">해결한 실습 문제</div>
+                    <div className="text-2xl font-extrabold text-mobility-600 mt-1">{practiceState.solvedIds.length}개</div>
+                    <div className="text-xs text-slate-500 mt-0.5">전체 {PRACTICE_PROBLEMS.length}문제 중</div>
+                  </div>
+                  <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                    <div className="text-xs text-slate-500">퀴즈 정답률</div>
+                    <div className="text-2xl font-extrabold text-emerald-700 mt-1">{quizAccuracy}%</div>
+                    <div className="text-xs text-slate-500 mt-0.5">풀이 {quizState.history.length}회</div>
+                  </div>
+                  <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                    <div className="text-xs text-slate-500">저장된 코드 스니펫</div>
+                    <div className="text-2xl font-extrabold text-navy-800 mt-1">{snippets.length}개</div>
+                    <div className="text-xs text-slate-500 mt-0.5">localStorage 자동 저장</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-2.5">
+                    <h2 className="text-sm font-extrabold text-navy-800">단원별 학습 완료 현황</h2>
+                    {LESSONS.map((les) => {
+                      const done = progress.completedLessons.includes(les.id);
+                      return (
+                        <div key={les.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-none text-xs sm:text-sm">
+                          <div>
+                            <span className="font-bold text-slate-800">{les.unit}</span>
+                            <span className="ml-2 font-mono text-xs text-slate-500">{les.pageRef}</span>
+                          </div>
+                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                            done ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'
+                          }`}>
+                            {done ? '완료' : '진행 전'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-sm font-extrabold text-navy-800">최근 학습 활동 로그</h2>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleExportJson}
+                          className="px-2.5 py-1 rounded-lg bg-mobility-100 text-mobility-600 text-xs font-bold"
+                        >
+                          JSON 내보내기
+                        </button>
+                        <button
+                          onClick={handleResetAllData}
+                          className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 text-xs font-bold"
+                        >
+                          기록 초기화
+                        </button>
+                      </div>
+                    </div>
+                    <div className="space-y-2 max-h-[340px] overflow-y-auto">
+                      {(progress.activityLog || []).length === 0 ? (
+                        <div className="text-xs text-slate-500 py-6 text-center">아직 기록된 활동이 없습니다.</div>
+                      ) : (
+                        progress.activityLog.map((act) => (
+                          <div key={act.id} className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs flex items-center justify-between gap-2">
+                            <div>
+                              <span className="font-semibold text-slate-800">{act.text}</span>
+                              {act.pageRef && <span className="ml-2 font-mono text-slate-500">({act.pageRef})</span>}
+                            </div>
+                            <span className="font-mono text-[11px] text-slate-400 whitespace-nowrap">{act.time}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </main>
+        </div>
+      );
+    }
+
+    class ErrorBoundary extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = { hasError: false, errorMsg: '' };
+      }
+      static getDerivedStateFromError(error) {
+        return { hasError: true, errorMsg: error?.message || '알 수 없는 오류' };
+      }
+      render() {
+        if (this.state.hasError) {
+          return (
+            <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
+              <div className="max-w-md w-full bg-white rounded-2xl border border-rose-200 p-6 shadow">
+                <h2 className="text-lg font-extrabold text-rose-700">화면 렌더링 오류</h2>
+                <p className="text-sm text-slate-700 mt-2">{this.state.errorMsg}</p>
+              </div>
+            </div>
+          );
+        }
+        return this.props.children;
+      }
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    );
+  </script>
+</body>
+</html>
